@@ -1,0 +1,135 @@
+/* General setup */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5; /* Light grey */
+  font-family: serif;
+  height: 100vh;
+  width: 100vw;
+  overflow: auto;
+}
+
+/* Header */
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  font-size: 0.9rem;
+}
+
+/* Title */
+.section-title {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 500;
+  border-top: 2px solid black;
+  padding-top: 1rem;
+  margin-bottom: 2rem;
+}
+
+.grid-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 150px); /* adjusts for header and title height */
+}
+
+/* Fixed 4-column grid */
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(4, 160px); /* Fixed width per item */
+  gap: 2rem;
+  padding: 0 2rem 2rem;
+}
+
+/* Item styling */
+.item {
+  text-align: center;
+}
+
+.item img {
+  width: 100%;
+  max-width: 160px;
+  margin: 0 auto 0.5rem;
+  display: block;
+}
+
+.item-title {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.item-price {
+  font-size: 0.75rem;
+}
+
+
+
+
+/* UPDATED CANVAS STYLE TO REMOVE GAP */
+#canvas-container canvas {
+  position: relative;       /* Changed from absolute */
+  pointer-events: auto;     /* Enable pointer events if needed */
+  display: block;
+  margin: 0 auto 8px auto;  /* Center horizontally with margin below */
+  max-width: 100%;
+  height: auto;             /* Keep aspect ratio */
+}
+
+#canvas-container button,
+#canvas-container input[type="range"] {
+  display: block;
+  margin: 8px 0;
+  font-size: 16px;
+  width: 100%;
+  max-width: 280px;
+  box-sizing: border-box;
+}
+
+.item {
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+#canvas-container button,
+#canvas-container canvas,
+#canvas-container .p5Slider,
+#canvas-container .p5Button {
+  position: relative;
+  z-index: 1; /* lower z-index so behind the image */
+  margin-top: 8px; /* some spacing */
+}
+
+    #canvas-container {
+      position: relative;
+      width: 150px;
+      height: 150px;
+      margin-bottom: 10px;
+    }
+    #canvas-container img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      z-index: 1;
+    }
+    #canvas-container canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+
+      z-index: 10;
+      pointer-events: none;
+      display: block;
+    }
+    /* Style for play button */
+    #play-sound-btn {
+      font-size: 12px;
+      padding: 4px;
+      width: 150px;
+      box-sizing: border-box;
+      cursor: pointer;
+    }
