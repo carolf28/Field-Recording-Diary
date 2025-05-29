@@ -1,7 +1,4 @@
 let sound;
-let mic, recorder, soundFile;
-
-let state = 0; // 0 = ready to record, 1 = recording, 2 = stopped recording (ready to play/save)
 
 let isModulating = false;
 let isReverbOn = false;
@@ -23,16 +20,7 @@ function setup() {
   background(200);
   fill(0);
   textAlign(CENTER, CENTER);
-  text('Click "Start Recording" to begin', width/2, height/2);
-
-  // MIC & recorder setup
-  mic = new p5.AudioIn();
-  mic.start();
-
-  recorder = new p5.SoundRecorder();
-  recorder.setInput(mic);
-
-  soundFile = new p5.SoundFile();
+  text('Click "Play" to start audio', width / 2, height / 2);
 
   // Play Button
   const playBtn = document.getElementById('play-sound-btn');
@@ -108,52 +96,9 @@ function setup() {
       filter.freq(mappedFreq);
     }
   });
-
-  // RECORDING BUTTON (uses the 3-step state logic you want)
-  const recordBtn = createButton('Start Recording');
-  recordBtn.parent('canvas-container').style('margin-top', '15px');
-  recordBtn.mousePressed(async () => {
-    await userStartAudio();
-
-    if (state === 0 && mic.enabled) {
-      // Start recording
-      soundFile = new p5.SoundFile(); // reset soundFile
-      recorder.record(soundFile);
-      state = 1;
-      recordBtn.html('Recording... Click to stop');
-      background(255, 0, 0);
-      clearText();
-      fill(255);
-      text('Recording now! Click to stop.', width / 2, height / 2);
-      console.log('🎙️ Recording started');
-    } else if (state === 1) {
-      // Stop recording
-      recorder.stop();
-      state = 2;
-      recordBtn.html('Click to Play & Save');
-      background(0, 255, 0);
-      clearText();
-      fill(0);
-      text('Recording stopped. Click to play & save', width / 2, height / 2);
-      console.log('💾 Recording stopped');
-    } else if (state === 2) {
-      // Play and save
-      soundFile.play();
-      saveSound(soundFile, 'myRecording.wav');
-      state = 0;
-      recordBtn.html('Start Recording');
-      background(200);
-      clearText();
-      fill(0);
-      text('Click "Start Recording" to begin', width / 2, height / 2);
-      console.log('▶️ Played and saved recording');
-    }
-  });
 }
 
 function draw() {
-  // Clear text area on canvas without clearing background color:
-  // (We only update text on record button click, so no text in draw)
   clear();
 
   if (isModulating && sound.isPlaying()) {
@@ -164,14 +109,12 @@ function draw() {
 }
 
 function clearText() {
-  // Helper: clear text area rectangle on canvas, leaving background color intact
   fill(backgroundColor());
   noStroke();
   rect(0, 0, width, height);
 }
 
 function backgroundColor() {
-  // Return current background color, you can customize if you want
   return color(200);
 }
 
