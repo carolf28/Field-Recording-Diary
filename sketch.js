@@ -16,12 +16,15 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(400, 200).parent('canvas-container');
+  // Responsive canvas width: 90% of container or max 400px
+  const container = document.getElementById('canvas-container');
+  const canvasWidth = Math.min(container.offsetWidth * 0.9, 400);
+  createCanvas(canvasWidth, 200).parent('canvas-container');
 
-  // Native Play button from HTML
+  // Play Button from HTML
   const playBtn = document.getElementById('play-sound-btn');
   playBtn.addEventListener('click', async () => {
-    await userStartAudio();
+    await userStartAudio(); // Unlock audio context on first interaction
 
     if (sound.isPlaying()) {
       sound.stop();
@@ -32,9 +35,10 @@ function setup() {
     }
   });
 
-  // Modulation Button (p5.js button)
+  // Create modulation button & slider
   const modButton = createButton('Modulation');
   modButton.parent('canvas-container');
+  modButton.style('margin-top', '10px');
   modButton.mousePressed(() => {
     isModulating = !isModulating;
     if (!isModulating) {
@@ -42,28 +46,30 @@ function setup() {
     }
   });
 
-  // Modulation Frequency Slider
   freqSlider = createSlider(0.1, 10, 1, 0.1);
   freqSlider.parent('canvas-container');
+  freqSlider.style('width', '100%');
+  freqSlider.style('margin-bottom', '15px');
 
-  // Reverb setup
+  // Setup reverb effect
   reverb = new p5.Reverb();
   reverb.process(sound, 15, 10);
   reverb.amp(2);
 
-  // Filter setup
+  // Setup filter effect
   filter = new p5.LowPass();
   filter.freq(22050);
   filter.res(10);
 
-  // Chain sound → filter → reverb → output
+  // Chain: sound → filter → reverb → output
   sound.disconnect();
   sound.connect(filter);
   filter.connect(reverb);
 
-  // Reverb Button
+  // Reverb button & slider
   const reverbButton = createButton('Reverb');
   reverbButton.parent('canvas-container');
+  reverbButton.style('margin-top', '10px');
   reverbButton.mousePressed(() => {
     isReverbOn = !isReverbOn;
     let dryWetVal = isReverbOn ? pow(reverbSlider.value(), 2) : 0;
@@ -71,9 +77,10 @@ function setup() {
     sound.amp(isReverbOn ? 0.4 : 1);
   });
 
-  // Reverb Slider
   reverbSlider = createSlider(0, 1, 0, 0.01);
   reverbSlider.parent('canvas-container');
+  reverbSlider.style('width', '100%');
+  reverbSlider.style('margin-bottom', '15px');
   reverbSlider.input(() => {
     if (isReverbOn) {
       let intensity = pow(reverbSlider.value(), 2);
@@ -82,9 +89,10 @@ function setup() {
     }
   });
 
-  // Filter Toggle Button
+  // Filter button & slider
   const filterButton = createButton('Filter');
   filterButton.parent('canvas-container');
+  filterButton.style('margin-top', '10px');
   filterButton.mousePressed(() => {
     isFilterOn = !isFilterOn;
     if (isFilterOn) {
@@ -95,9 +103,10 @@ function setup() {
     }
   });
 
-  // Filter Slider
   filterSlider = createSlider(0, 1, 0, 0.01);
   filterSlider.parent('canvas-container');
+  filterSlider.style('width', '100%');
+  filterSlider.style('margin-bottom', '15px');
   filterSlider.input(() => {
     if (isFilterOn) {
       let mappedFreq = map(filterSlider.value(), 0, 1, 22050, 100);
@@ -105,18 +114,25 @@ function setup() {
     }
   });
 
-  // Optional: debug audio context state
+  // Optional: log audio context state to debug
   setInterval(() => {
     console.log('AudioContext state:', getAudioContext().state);
   }, 5000);
 }
 
 function draw() {
-  // No background clearing here, so canvas stays transparent
+  clear(); // clear background to transparent
 
   if (isModulating && sound.isPlaying()) {
     angle += freqSlider.value() * 0.05;
     let volume = map(sin(angle), -1, 1, 0, 1);
     sound.setVolume(volume);
   }
+}
+
+// Responsive canvas on window resize
+function windowResized() {
+  const container = document.getElementById('canvas-container');
+  const newWidth = Math.min(container.offsetWidth * 0.9, 400);
+  resizeCanvas(newWidth, 200);
 }

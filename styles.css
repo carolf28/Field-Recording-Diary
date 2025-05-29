@@ -46,6 +46,8 @@ body {
 /* Item styling */
 .item {
   text-align: center;
+  padding: 10px;
+  box-sizing: border-box;
 }
 
 .item img {
@@ -65,71 +67,106 @@ body {
   font-size: 0.75rem;
 }
 
-
-
-
-/* UPDATED CANVAS STYLE TO REMOVE GAP */
-#canvas-container canvas {
-  position: relative;       /* Changed from absolute */
-  pointer-events: auto;     /* Enable pointer events if needed */
-  display: block;
-  margin: 0 auto 8px auto;  /* Center horizontally with margin below */
-  max-width: 100%;
-  height: auto;             /* Keep aspect ratio */
+/* Canvas container - overlay canvas on top of image */
+#canvas-container {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin-bottom: 10px;
 }
 
+/* The book cover image */
+#canvas-container img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  z-index: 1; /* image behind canvas */
+}
+
+/* The canvas itself */
+#canvas-container canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* canvas does not block clicks */
+  z-index: 10; /* canvas on top */
+  display: block;
+}
+
+/* Controls inside canvas-container */
 #canvas-container button,
 #canvas-container input[type="range"] {
+  position: relative;
+  z-index: 20; /* controls on top of everything */
   display: block;
-  margin: 8px 0;
-  font-size: 16px;
   width: 100%;
   max-width: 280px;
+  margin: 8px auto;
+  font-size: 16px;
   box-sizing: border-box;
+  cursor: pointer;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
-.item {
-  padding: 10px;
+/* Play button specific */
+#play-sound-btn {
+  font-size: 12px;
+  padding: 6px 8px;
+  width: 150px;
   box-sizing: border-box;
+  cursor: pointer;
+  margin: 0 auto 10px auto;
+  display: block;
 }
 
-#canvas-container button,
-#canvas-container canvas,
-#canvas-container .p5Slider,
-#canvas-container .p5Button {
-  position: relative;
-  z-index: 1; /* lower z-index so behind the image */
-  margin-top: 8px; /* some spacing */
+/* Ensure all buttons and sliders are visible and full width */
+button, input[type=range] {
+  display: block !important;
+  width: 100% !important;
+  margin: 10px 0 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
-    #canvas-container {
-      position: relative;
-      width: 150px;
-      height: 150px;
-      margin-bottom: 10px;
-    }
-    #canvas-container img {
-      display: block;
-      width: 100%;
-      height: 100%;
-      position: relative;
-      z-index: 1;
-    }
-    #canvas-container canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
 
-      z-index: 10;
-      pointer-events: none;
-      display: block;
-    }
-    /* Style for play button */
-    #play-sound-btn {
-      font-size: 12px;
-      padding: 4px;
-      width: 150px;
-      box-sizing: border-box;
-      cursor: pointer;
-    }
+@media (max-width: 480px) {
+  .grid-container {
+    grid-template-columns: 1fr; /* single full-width column */
+    padding: 0 1rem 1rem; /* reduce horizontal padding */
+    gap: 1rem; /* smaller gaps on mobile */
+  }
+  
+  /* Optional: center items, if you want */
+  .item {
+    max-width: 320px; /* optional max width for each item */
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  #canvas-container {
+    width: 100vw;
+    height: auto;
+  }
+  #canvas-container canvas, #canvas-container img {
+    width: 100%;
+    height: auto;
+  }
+  #canvas-container button, #canvas-container input[type="range"] {
+    max-width: 100%;
+    font-size: 14px;
+  }
+  /* Let the grid-wrapper grow with content instead of fixed height */
+  .grid-wrapper {
+    height: auto;
+    margin-top: 3rem; /* push grid down below the title */
+  }
+
+  /* Optional: add some bottom margin to title to increase space */
+  .section-title {
+    margin-bottom: 2rem;
+  }
+}
