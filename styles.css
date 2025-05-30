@@ -32,15 +32,19 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: calc(100vh - 150px); /* adjusts for header and title height */
+  padding: 0 2rem 4rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-/* Fixed 4-column grid */
 .grid-container {
   display: grid;
-  grid-template-columns: repeat(4, 160px); /* Fixed width per item */
-  gap: 2rem;
-  padding: 0 2rem 2rem;
+  grid-template-columns: repeat(4, 1fr); /* 4 columns */
+  grid-template-rows: repeat(2, auto);   /* 2 rows */
+  gap: 5rem 2rem; /* row gap, column gap */
+  width: 100%;
+  max-width: 1000px; /* total grid width */
+  margin: 0 auto;
 }
 
 /* Item styling */
@@ -52,7 +56,9 @@ body {
 
 .item img {
   width: 100%;
-  max-width: 160px;
+  height: auto;
+  max-width: 180px;
+  border-radius: 4px;
   margin: 0 auto 0.5rem;
   display: block;
 }
@@ -65,14 +71,15 @@ body {
 
 .item-price {
   font-size: 0.75rem;
+  color: #444;
 }
 
 /* Canvas container - overlay canvas on top of image */
 #canvas-container {
   position: relative;
-  width: 150px;
-  height: 150px;
-  margin-bottom: 10px;
+  width: 180px;
+  height: 180px;
+  margin: 0 auto 3rem;
 }
 
 /* The book cover image */
@@ -81,7 +88,9 @@ body {
   width: 100%;
   height: 100%;
   position: relative;
-  z-index: 1; /* image behind canvas */
+  z-index: 1;
+  object-fit: cover;
+  border-radius: 4px;
 }
 
 /* The canvas itself */
@@ -91,16 +100,17 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none; /* canvas does not block clicks */
-  z-index: 10; /* canvas on top */
+  pointer-events: none;
+  z-index: 10;
   display: block;
+  border-radius: 4px;
 }
 
 /* Controls inside canvas-container */
 #canvas-container button,
 #canvas-container input[type="range"] {
   position: relative;
-  z-index: 20; /* controls on top of everything */
+  z-index: 20;
   display: block;
   width: 100%;
   max-width: 280px;
@@ -117,14 +127,13 @@ body {
   font-size: 12px;
   padding: 6px 8px;
   width: 150px;
-  box-sizing: border-box;
-  cursor: pointer;
   margin: 0 auto 10px auto;
   display: block;
 }
 
-/* Ensure all buttons and sliders are visible and full width */
-button, input[type=range] {
+/* General button and slider styling */
+button,
+input[type="range"] {
   display: block !important;
   width: 100% !important;
   margin: 10px 0 !important;
@@ -132,41 +141,41 @@ button, input[type=range] {
   visibility: visible !important;
 }
 
-
-@media (max-width: 480px) {
+/* Responsive layout adjustments */
+@media (max-width: 780px) {
   .grid-container {
-    grid-template-columns: 1fr; /* single full-width column */
-    padding: 0 1rem 1rem; /* reduce horizontal padding */
-    gap: 1rem; /* smaller gaps on mobile */
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 2rem;
   }
-  
-  /* Optional: center items, if you want */
+
   .item {
-    max-width: 320px; /* optional max width for each item */
-    margin-left: auto;
-    margin-right: auto;
+    max-width: 90%;
+    margin: 0 auto;
   }
 
   #canvas-container {
-    width: 100vw;
+    width: 90vw;
     height: auto;
+    margin-bottom: 2rem;
   }
-  #canvas-container canvas, #canvas-container img {
+
+  #canvas-container canvas,
+  #canvas-container img {
     width: 100%;
     height: auto;
   }
-  #canvas-container button, #canvas-container input[type="range"] {
+
+  #canvas-container button,
+  #canvas-container input[type="range"] {
     max-width: 100%;
     font-size: 14px;
   }
-  /* Let the grid-wrapper grow with content instead of fixed height */
-  .grid-wrapper {
-    height: auto;
-    margin-top: 3rem; /* push grid down below the title */
-  }
 
-  /* Optional: add some bottom margin to title to increase space */
   .section-title {
     margin-bottom: 2rem;
+  }
+
+  .grid-wrapper {
+    padding-bottom: 5rem;
   }
 }
