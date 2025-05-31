@@ -11,16 +11,49 @@ let angle = 0;
 let freqSlider, reverbSlider, filterSlider, pitchSlider;
 let reverb, filter;
 
+let mediaRecorder;
+let recordedChunks = [];
+
 function setup() {
   noCanvas();
 
-  // Setup global effects
+  // Setup global effects chain
   reverb = new p5.Reverb();
   filter = new p5.LowPass();
   filter.freq(22050);
   filter.res(10);
 
-  // Effects console buttons and sliders (assume these exist in your HTML)
+  // Connect filter → reverb → master output
+  filter.disconnect();
+  filter.connect(reverb);
+  reverb.disconnect();
+  reverb.connect();
+
+  // Create MediaStreamDestination to record from effects output (reverb)
+  const audioCtx = getAudioContext();
+  const dest = audioCtx.createMediaStreamDestination();
+  reverb.output.connect(dest);
+
+  // Setup MediaRecorder from effects output stream
+  mediaRecorder = new MediaRecorder(dest.stream);
+  mediaRecorder.ondataavailable = e => {
+    if (e.data.size > 0) recordedChunks.push(e.data);
+  };
+  mediaRecorder.onstop = () => {
+    const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+    recordedChunks = [];
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = 'recording.webm';
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(url);
+    a.remove();
+  };
+
+  // Select sliders and buttons from HTML
   freqSlider = select('#freq-slider');
   reverbSlider = select('#reverb-slider');
   filterSlider = select('#filter-slider');
@@ -55,6 +88,19 @@ function setup() {
     if (isPitchOn) updatePitch();
   });
 
+  // Record button
+  select('#record-btn').mousePressed(() => {
+    if (mediaRecorder.state === 'inactive') {
+      mediaRecorder.start();
+      console.log('🎙️ Recording started');
+      select('#record-btn').html('Stop Recording');
+    } else if (mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+      console.log('Recording stopped');
+      select('#record-btn').html('Start Recording');
+    }
+  });
+
   // Setup play buttons for each sound container
   const containers = selectAll('.canvas-container');
   containers.forEach(container => {
@@ -68,19 +114,18 @@ function setup() {
     playBtn.mousePressed(async () => {
       await userStartAudio();
 
-      // If currently active sound is playing and different from this, stop it
+      // Stop currently playing sound if different from this
       if (activeSound && activeSound.isPlaying() && activeSound !== soundInstance) {
         activeSound.stop();
         if (activePlayBtn) activePlayBtn.html('Play Sound');
       }
 
-      // If soundInstance not loaded, load it now
+      // Load sound if not loaded yet
       if (!soundInstance) {
         soundInstance = loadSound(audioFile, () => {
           startSound(soundInstance, playBtn);
         }, err => console.error('Failed to load sound:', err));
       } else {
-        // Toggle play/stop for this sound
         if (soundInstance.isPlaying()) {
           soundInstance.stop();
           playBtn.html('Play Sound');
@@ -103,18 +148,14 @@ function draw() {
 }
 
 function startSound(soundInstance, playBtn) {
-  // Connect effects chain for this sound
-  soundInstance.disconnect();
-  soundInstance.connect(filter);
-  filter.connect(reverb);
-  reverb.process(soundInstance, 3, 2);
+  soundInstance.disconnect();   // Disconnect from default output
+  soundInstance.connect(filter); // Connect to filter (effects chain)
 
   soundInstance.loop();
   playBtn.html('Stop Sound');
   activeSound = soundInstance;
   activePlayBtn = playBtn;
 
-  // Update effects to current settings
   updateReverb();
   updateFilter();
   updatePitch();
