@@ -22,8 +22,8 @@ function preload() {
 
 function setup() {
   const container = document.getElementById('canvas-container');
-  const canvasWidth = Math.min(container.offsetWidth * 0.9, 400);
-  createCanvas(canvasWidth, 200).parent('canvas-container');
+  const canvasSize = Math.min(container.offsetWidth * 0.9, 400);
+  createCanvas(canvasSize, canvasSize).parent('canvas-container'); // square canvas
   background(200);
   fill(0);
   textAlign(CENTER, CENTER);
@@ -191,6 +191,6 @@ function draw() {
 
 function windowResized() {
   const container = document.getElementById('canvas-container');
-  const newWidth = Math.min(container.offsetWidth * 0.9, 400);
-  resizeCanvas(newWidth, 200);
+  const newSize = Math.min(container.offsetWidth * 0.9, 400);
+  resizeCanvas(newSize, newSize);
 }

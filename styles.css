@@ -84,13 +84,13 @@ body {
 
 /* The book cover image */
 .canvas-container img {
-  display: block;
   width: 100%;
-  height: 100%;
-  position: relative;
-  z-index: 1;
-  object-fit: cover;
+  height: auto;      /* change this from 100% to auto */
+  max-width: 180px;
   border-radius: 4px;
+  margin: 0 auto 0.5rem;
+  display: block;
+  object-fit: cover;
 }
 
 /* The canvas itself */
@@ -181,20 +181,19 @@ input[type="range"]::-moz-range-thumb {
 /* Responsive layout adjustments */
 @media (max-width: 780px) {
   .grid-container {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20rem;
   }
 
   .item {
-    max-width: 90%;
+    max-width: 100%;
     margin: 0 auto;
   }
 
   .canvas-container {
     width: 90vw;
-    height: auto;
+    height: 90vw; /* enforce square shape */
     margin-bottom: 2rem;
-    aspect-ratio: 1 / 1; /* keep square shape */
   }
 
   .canvas-container canvas,
@@ -217,3 +216,4 @@ input[type="range"]::-moz-range-thumb {
     padding-bottom: 5rem;
   }
 }
+
