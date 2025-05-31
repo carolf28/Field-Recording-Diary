@@ -1,6 +1,6 @@
 // Global vars
-let activeSound = null;        // Currently playing p5.SoundFile
-let activePlayBtn = null;      // Currently active play button
+let activeSound = null;
+let activePlayBtn = null;
 
 let isModulating = false;
 let isReverbOn = false;
@@ -11,49 +11,19 @@ let angle = 0;
 let freqSlider, reverbSlider, filterSlider, pitchSlider;
 let reverb, filter;
 
-let mediaRecorder;
+let mediaRecorder = null;
 let recordedChunks = [];
+let dest = null; // MediaStreamDestination
 
 function setup() {
   noCanvas();
 
-  // Setup global effects chain
+  // Setup global effects
   reverb = new p5.Reverb();
   filter = new p5.LowPass();
   filter.freq(22050);
   filter.res(10);
 
-  // Connect filter → reverb → master output
-  filter.disconnect();
-  filter.connect(reverb);
-  reverb.disconnect();
-  reverb.connect();
-
-  // Create MediaStreamDestination to record from effects output (reverb)
-  const audioCtx = getAudioContext();
-  const dest = audioCtx.createMediaStreamDestination();
-  reverb.output.connect(dest);
-
-  // Setup MediaRecorder from effects output stream
-  mediaRecorder = new MediaRecorder(dest.stream);
-  mediaRecorder.ondataavailable = e => {
-    if (e.data.size > 0) recordedChunks.push(e.data);
-  };
-  mediaRecorder.onstop = () => {
-    const blob = new Blob(recordedChunks, { type: 'audio/webm' });
-    recordedChunks = [];
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    a.download = 'recording.webm';
-    document.body.appendChild(a);
-    a.click();
-    URL.revokeObjectURL(url);
-    a.remove();
-  };
-
-  // Select sliders and buttons from HTML
   freqSlider = select('#freq-slider');
   reverbSlider = select('#reverb-slider');
   filterSlider = select('#filter-slider');
@@ -88,39 +58,22 @@ function setup() {
     if (isPitchOn) updatePitch();
   });
 
-  // Record button
-  select('#record-btn').mousePressed(() => {
-    if (mediaRecorder.state === 'inactive') {
-      mediaRecorder.start();
-      console.log('🎙️ Recording started');
-      select('#record-btn').html('Stop Recording');
-    } else if (mediaRecorder.state === 'recording') {
-      mediaRecorder.stop();
-      console.log('Recording stopped');
-      select('#record-btn').html('Start Recording');
-    }
-  });
-
-  // Setup play buttons for each sound container
   const containers = selectAll('.canvas-container');
   containers.forEach(container => {
     const audioFile = container.elt.dataset.audio;
     let soundInstance = null;
 
-    // Create play button inside container
     const playBtn = createButton('Play Sound').parent(container);
     playBtn.style('margin-top', '10px');
 
     playBtn.mousePressed(async () => {
       await userStartAudio();
 
-      // Stop currently playing sound if different from this
       if (activeSound && activeSound.isPlaying() && activeSound !== soundInstance) {
         activeSound.stop();
         if (activePlayBtn) activePlayBtn.html('Play Sound');
       }
 
-      // Load sound if not loaded yet
       if (!soundInstance) {
         soundInstance = loadSound(audioFile, () => {
           startSound(soundInstance, playBtn);
@@ -137,6 +90,26 @@ function setup() {
       }
     });
   });
+
+  // Setup recording button
+  const recordBtn = select('#record-btn');
+  recordBtn.mousePressed(() => {
+    if (!mediaRecorder) {
+      // Setup MediaRecorder only when first requested
+      setupRecorder();
+    }
+
+    if (mediaRecorder.state === 'inactive') {
+      recordedChunks = [];
+      mediaRecorder.start();
+      recordBtn.html('Stop Recording');
+      console.log('🎙️ Recording started');
+    } else if (mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+      recordBtn.html('Start Recording');
+      console.log('Recording stopped');
+    }
+  });
 }
 
 function draw() {
@@ -148,8 +121,10 @@ function draw() {
 }
 
 function startSound(soundInstance, playBtn) {
-  soundInstance.disconnect();   // Disconnect from default output
-  soundInstance.connect(filter); // Connect to filter (effects chain)
+  soundInstance.disconnect();
+  soundInstance.connect(filter);
+  filter.connect(reverb);
+  reverb.process(soundInstance, 3, 2);
 
   soundInstance.loop();
   playBtn.html('Stop Sound');
@@ -183,4 +158,51 @@ function updatePitch() {
   } else {
     activeSound.rate(1);
   }
+}
+
+function setupRecorder() {
+  if (!activeSound) {
+    console.warn('No active sound to record');
+    return;
+  }
+
+  const audioCtx = getAudioContext();
+
+  if (dest) {
+    // If already created, disconnect and recreate to avoid duplicates
+    dest.disconnect();
+  }
+
+  dest = audioCtx.createMediaStreamDestination();
+
+  reverb.output.disconnect();
+  reverb.output.connect(dest);
+
+  let options = { mimeType: 'audio/mp4' };
+  if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+    console.warn('audio/mp4 not supported, falling back');
+    options = { mimeType: 'audio/webm' };
+  }
+
+  mediaRecorder = new MediaRecorder(dest.stream, options);
+
+  mediaRecorder.ondataavailable = (event) => {
+    if (event.data.size > 0) recordedChunks.push(event.data);
+  };
+
+  mediaRecorder.onstop = () => {
+    const mimeType = mediaRecorder.mimeType || 'audio/webm';
+    const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
+    const blob = new Blob(recordedChunks, { type: mimeType });
+    recordedChunks = [];
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = `recorded_output.${extension}`;
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 }
