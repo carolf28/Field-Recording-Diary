@@ -1,5 +1,7 @@
-// Global variables
-let activeSound = null;
+// Global vars
+let activeSound = null;        // Currently playing p5.SoundFile
+let activePlayBtn = null;      // Currently active play button
+
 let isModulating = false;
 let isReverbOn = false;
 let isFilterOn = false;
@@ -9,173 +11,86 @@ let angle = 0;
 let freqSlider, reverbSlider, filterSlider, pitchSlider;
 let reverb, filter;
 
-let mediaRecorder;
-let recordedChunks = [];
-
 function setup() {
   noCanvas();
 
-  // Setup effects
+  // Setup global effects
   reverb = new p5.Reverb();
   filter = new p5.LowPass();
   filter.freq(22050);
   filter.res(10);
 
-  // Select sliders and buttons from the HTML effects console
+  // Effects console buttons and sliders (assume these exist in your HTML)
   freqSlider = select('#freq-slider');
   reverbSlider = select('#reverb-slider');
   filterSlider = select('#filter-slider');
   pitchSlider = select('#pitch-slider');
 
-  const modButton = select('#modulation-btn');
-  const reverbButton = select('#reverb-btn');
-  const filterButton = select('#filter-btn');
-  const pitchButton = select('#pitch-btn');
-  const recordButton = select('#record-btn');
-
-  // Modulation toggle
-  modButton.mousePressed(() => {
+  select('#modulation-btn').mousePressed(() => {
     isModulating = !isModulating;
     if (!isModulating && activeSound) activeSound.setVolume(1);
   });
 
-  // Reverb toggle
-  reverbButton.mousePressed(() => {
+  select('#reverb-btn').mousePressed(() => {
     isReverbOn = !isReverbOn;
-    if (!activeSound) return;
-    if (isReverbOn) {
-      const val = pow(reverbSlider.value(), 2);
-      reverb.process(activeSound, 30, 20); // Your longer reverb time & decay
-      reverb.drywet(val);
-      activeSound.amp(1 - 0.6 * val);
-    } else {
-      reverb.drywet(0);
-      activeSound.amp(1);
-    }
+    updateReverb();
   });
   reverbSlider.input(() => {
-    if (!activeSound || !isReverbOn) return;
-    const val = pow(reverbSlider.value(), 2);
-    reverb.drywet(val);
-    activeSound.amp(1 - 0.6 * val);
+    if (isReverbOn) updateReverb();
   });
 
-  // Filter toggle
-  filterButton.mousePressed(() => {
+  select('#filter-btn').mousePressed(() => {
     isFilterOn = !isFilterOn;
-    if (!activeSound) return;
-    const mappedFreq = map(filterSlider.value(), 0, 1, 22050, 100);
-    filter.freq(isFilterOn ? mappedFreq : 22050);
+    updateFilter();
   });
   filterSlider.input(() => {
-    if (!activeSound || !isFilterOn) return;
-    const mappedFreq = map(filterSlider.value(), 0, 1, 22050, 100);
-    filter.freq(mappedFreq);
+    if (isFilterOn) updateFilter();
   });
 
-  // Pitch Shift toggle
-  pitchButton.mousePressed(() => {
+  select('#pitch-btn').mousePressed(() => {
     isPitchOn = !isPitchOn;
-    if (!activeSound) return;
-    if (isPitchOn) {
-      let rate = pitchSlider.value() * 2;
-      rate = constrain(rate, 0.1, 4);
-      activeSound.rate(rate);
-    } else {
-      activeSound.rate(1);
-    }
+    updatePitch();
   });
   pitchSlider.input(() => {
-    if (!activeSound || !isPitchOn) return;
-    let rate = pitchSlider.value() * 2;
-    rate = constrain(rate, 0.1, 4);
-    activeSound.rate(rate);
+    if (isPitchOn) updatePitch();
   });
 
-  // Setup play buttons under each .canvas-container
-  document.querySelectorAll('.canvas-container').forEach(container => {
-    const audioFile = container.dataset.audio;
+  // Setup play buttons for each sound container
+  const containers = selectAll('.canvas-container');
+  containers.forEach(container => {
+    const audioFile = container.elt.dataset.audio;
+    let soundInstance = null;
 
-    let playBtn = container.querySelector('button.play-sound-btn');
-    if (!playBtn) {
-      playBtn = createButton('Play Sound').class('play-sound-btn').parent(container);
-    }
+    // Create play button inside container
+    const playBtn = createButton('Play Sound').parent(container);
+    playBtn.style('margin-top', '10px');
 
     playBtn.mousePressed(async () => {
       await userStartAudio();
 
-      if (activeSound && activeSound.isPlaying()) {
+      // If currently active sound is playing and different from this, stop it
+      if (activeSound && activeSound.isPlaying() && activeSound !== soundInstance) {
         activeSound.stop();
-        playBtn.html('Play Sound');
-        return;
+        if (activePlayBtn) activePlayBtn.html('Play Sound');
       }
 
-      if (activeSound) {
-        activeSound.stop();
-        document.querySelectorAll('.play-sound-btn').forEach(btn => btn.html('Play Sound'));
+      // If soundInstance not loaded, load it now
+      if (!soundInstance) {
+        soundInstance = loadSound(audioFile, () => {
+          startSound(soundInstance, playBtn);
+        }, err => console.error('Failed to load sound:', err));
+      } else {
+        // Toggle play/stop for this sound
+        if (soundInstance.isPlaying()) {
+          soundInstance.stop();
+          playBtn.html('Play Sound');
+          activeSound = null;
+          activePlayBtn = null;
+        } else {
+          startSound(soundInstance, playBtn);
+        }
       }
-
-      activeSound = loadSound(audioFile, () => {
-        activeSound.disconnect();
-        activeSound.connect(filter);
-        filter.connect(reverb);
-        reverb.process(activeSound, 30, 20); // Apply your reverb time here
-
-        activeSound.loop();
-        playBtn.html('Stop Sound');
-
-        // Reset effect states on new sound
-        if (!isReverbOn) reverb.drywet(0);
-        if (!isFilterOn) filter.freq(22050);
-        if (!isPitchOn) activeSound.rate(1);
-        activeSound.amp(1);
-      }, err => console.error('Failed to load:', err));
     });
-  });
-
-  // Setup mediaRecorder for recording from reverb output
-  const audioCtx = getAudioContext();
-  const dest = audioCtx.createMediaStreamDestination();
-  reverb.output.connect(dest);
-
-  let options = { mimeType: 'audio/mp4' };
-  if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-    console.warn('⚠️ audio/mp4 not supported. Falling back to default format.');
-    options = {};
-  }
-
-  mediaRecorder = new MediaRecorder(dest.stream, options);
-
-  mediaRecorder.ondataavailable = (event) => {
-    if (event.data.size > 0) recordedChunks.push(event.data);
-  };
-
-  mediaRecorder.onstop = () => {
-    const mimeType = mediaRecorder.mimeType || 'audio/webm';
-    const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
-    const blob = new Blob(recordedChunks, { type: mimeType });
-    recordedChunks = [];
-
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    a.download = `recorded_output.${extension}`;
-    document.body.appendChild(a);
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  recordButton.mousePressed(() => {
-    if (mediaRecorder.state === 'inactive') {
-      mediaRecorder.start();
-      recordButton.html('Stop Recording');
-      console.log('🎙️ Recording started');
-    } else if (mediaRecorder.state === 'recording') {
-      mediaRecorder.stop();
-      recordButton.html('Start Recording');
-      console.log('Recording stopped');
-    }
   });
 }
 
@@ -184,5 +99,47 @@ function draw() {
     angle += freqSlider.value() * 0.05;
     const volume = map(sin(angle), -1, 1, 0, 1);
     activeSound.setVolume(volume);
+  }
+}
+
+function startSound(soundInstance, playBtn) {
+  // Connect effects chain for this sound
+  soundInstance.disconnect();
+  soundInstance.connect(filter);
+  filter.connect(reverb);
+  reverb.process(soundInstance, 3, 2);
+
+  soundInstance.loop();
+  playBtn.html('Stop Sound');
+  activeSound = soundInstance;
+  activePlayBtn = playBtn;
+
+  // Update effects to current settings
+  updateReverb();
+  updateFilter();
+  updatePitch();
+}
+
+function updateReverb() {
+  if (!activeSound) return;
+  const val = isReverbOn ? pow(reverbSlider.value(), 2) : 0;
+  reverb.drywet(val);
+  activeSound.amp(isReverbOn ? 0.4 : 1);
+}
+
+function updateFilter() {
+  if (!activeSound) return;
+  const mappedFreq = map(filterSlider.value(), 0, 1, 22050, 100);
+  filter.freq(isFilterOn ? mappedFreq : 22050);
+}
+
+function updatePitch() {
+  if (!activeSound) return;
+  if (isPitchOn) {
+    let rate = pitchSlider.value() * 2;
+    rate = constrain(rate, 0.1, 4);
+    activeSound.rate(rate);
+  } else {
+    activeSound.rate(1);
   }
 }
