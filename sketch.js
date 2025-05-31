@@ -1,4 +1,5 @@
-let sound;
+// Global variables
+let activeSound = null;
 let isModulating = false;
 let isReverbOn = false;
 let isFilterOn = false;
@@ -11,128 +12,128 @@ let reverb, filter;
 let mediaRecorder;
 let recordedChunks = [];
 
-function preload() {
-  soundFormats('mp3', 'ogg');
-  try {
-    sound = loadSound('fieldrecording1.mp3');
-  } catch (e) {
-    console.error('⚠️ Failed to load sound:', e);
-  }
-}
-
 function setup() {
-  const container = document.getElementById('canvas-container');
-  const canvasSize = Math.min(container.offsetWidth * 0.9, 400);
-  createCanvas(canvasSize, canvasSize).parent('canvas-container'); // square canvas
-  background(200);
-  fill(0);
-  textAlign(CENTER, CENTER);
-  text('Click "Play Sound" to begin', width / 2, height / 2);
+  noCanvas();
 
-  // Play button
-  const playBtn = createButton('Play Sound');
-  playBtn.parent('canvas-container').style('margin-top', '10px');
-  playBtn.mousePressed(async () => {
-    await userStartAudio();
-    if (getAudioContext().state !== 'running') {
-      await getAudioContext().resume();
-    }
-
-    if (sound.isPlaying()) {
-      sound.stop();
-      playBtn.html('Play Sound');
-    } else {
-      sound.loop();
-      playBtn.html('Stop Sound');
-    }
-  });
-
-  // Modulation
-  const modButton = createButton('Modulation');
-  modButton.parent('canvas-container').style('margin-top', '10px');
-  modButton.mousePressed(() => {
-    isModulating = !isModulating;
-    if (!isModulating) sound.setVolume(1);
-  });
-
-  freqSlider = createSlider(0.1, 10, 1, 0.1);
-  freqSlider.parent('canvas-container').style('width', '100%').style('margin-bottom', '15px');
-
-  // Reverb
+  // Setup effects
   reverb = new p5.Reverb();
-  reverb.process(sound, 30, 20);
-  reverb.amp(2);
-
-  // Filter
   filter = new p5.LowPass();
   filter.freq(22050);
   filter.res(10);
 
-  sound.disconnect();
-  sound.connect(filter);
-  filter.connect(reverb);
+  // Select sliders and buttons from the HTML effects console
+  freqSlider = select('#freq-slider');
+  reverbSlider = select('#reverb-slider');
+  filterSlider = select('#filter-slider');
+  pitchSlider = select('#pitch-slider');
 
-  const reverbButton = createButton('Reverb');
-  reverbButton.parent('canvas-container').style('margin-top', '10px');
+  const modButton = select('#modulation-btn');
+  const reverbButton = select('#reverb-btn');
+  const filterButton = select('#filter-btn');
+  const pitchButton = select('#pitch-btn');
+  const recordButton = select('#record-btn');
+
+  // Modulation toggle
+  modButton.mousePressed(() => {
+    isModulating = !isModulating;
+    if (!isModulating && activeSound) activeSound.setVolume(1);
+  });
+
+  // Reverb toggle
   reverbButton.mousePressed(() => {
     isReverbOn = !isReverbOn;
-    const val = isReverbOn ? pow(reverbSlider.value(), 2) : 0;
-    reverb.drywet(val);
-    sound.amp(isReverbOn ? 0.4 : 1);
-  });
-
-  reverbSlider = createSlider(0, 1, 0, 0.01);
-  reverbSlider.parent('canvas-container').style('width', '100%').style('margin-bottom', '15px');
-  reverbSlider.input(() => {
+    if (!activeSound) return;
     if (isReverbOn) {
-      const intensity = pow(reverbSlider.value(), 2);
-      reverb.drywet(intensity);
-      sound.amp(1 - 0.6 * intensity);
+      const val = pow(reverbSlider.value(), 2);
+      reverb.process(activeSound, 30, 20); // Your longer reverb time & decay
+      reverb.drywet(val);
+      activeSound.amp(1 - 0.6 * val);
+    } else {
+      reverb.drywet(0);
+      activeSound.amp(1);
     }
   });
+  reverbSlider.input(() => {
+    if (!activeSound || !isReverbOn) return;
+    const val = pow(reverbSlider.value(), 2);
+    reverb.drywet(val);
+    activeSound.amp(1 - 0.6 * val);
+  });
 
-  const filterButton = createButton('Toggle Filter');
-  filterButton.parent('canvas-container').style('margin-top', '10px');
+  // Filter toggle
   filterButton.mousePressed(() => {
     isFilterOn = !isFilterOn;
+    if (!activeSound) return;
     const mappedFreq = map(filterSlider.value(), 0, 1, 22050, 100);
     filter.freq(isFilterOn ? mappedFreq : 22050);
   });
-
-  filterSlider = createSlider(0, 1, 0, 0.01);
-  filterSlider.parent('canvas-container').style('width', '100%').style('margin-bottom', '15px');
   filterSlider.input(() => {
-    if (isFilterOn) {
-      const mappedFreq = map(filterSlider.value(), 0, 1, 22050, 100);
-      filter.freq(mappedFreq);
-    }
+    if (!activeSound || !isFilterOn) return;
+    const mappedFreq = map(filterSlider.value(), 0, 1, 22050, 100);
+    filter.freq(mappedFreq);
   });
 
-  // 🔊 Pitch Shift Button + Slider (Updated for more intensity)
-  const pitchButton = createButton('Toggle Pitch Shift');
-  pitchButton.parent('canvas-container').style('margin-top', '10px');
+  // Pitch Shift toggle
   pitchButton.mousePressed(() => {
     isPitchOn = !isPitchOn;
+    if (!activeSound) return;
     if (isPitchOn) {
-      let intenseRate = pitchSlider.value() * 2;
-      intenseRate = constrain(intenseRate, 0.1, 4);
-      sound.rate(intenseRate);
+      let rate = pitchSlider.value() * 2;
+      rate = constrain(rate, 0.1, 4);
+      activeSound.rate(rate);
     } else {
-      sound.rate(1); // reset to normal rate
+      activeSound.rate(1);
     }
   });
-
-  pitchSlider = createSlider(0.25, 3.0, 1, 0.01);
-  pitchSlider.parent('canvas-container').style('width', '100%').style('margin-bottom', '15px');
   pitchSlider.input(() => {
-    if (isPitchOn) {
-      let intenseRate = pitchSlider.value() * 2;
-      intenseRate = constrain(intenseRate, 0.1, 4);
-      sound.rate(intenseRate);
-    }
+    if (!activeSound || !isPitchOn) return;
+    let rate = pitchSlider.value() * 2;
+    rate = constrain(rate, 0.1, 4);
+    activeSound.rate(rate);
   });
 
-  // Recording setup
+  // Setup play buttons under each .canvas-container
+  document.querySelectorAll('.canvas-container').forEach(container => {
+    const audioFile = container.dataset.audio;
+
+    let playBtn = container.querySelector('button.play-sound-btn');
+    if (!playBtn) {
+      playBtn = createButton('Play Sound').class('play-sound-btn').parent(container);
+    }
+
+    playBtn.mousePressed(async () => {
+      await userStartAudio();
+
+      if (activeSound && activeSound.isPlaying()) {
+        activeSound.stop();
+        playBtn.html('Play Sound');
+        return;
+      }
+
+      if (activeSound) {
+        activeSound.stop();
+        document.querySelectorAll('.play-sound-btn').forEach(btn => btn.html('Play Sound'));
+      }
+
+      activeSound = loadSound(audioFile, () => {
+        activeSound.disconnect();
+        activeSound.connect(filter);
+        filter.connect(reverb);
+        reverb.process(activeSound, 30, 20); // Apply your reverb time here
+
+        activeSound.loop();
+        playBtn.html('Stop Sound');
+
+        // Reset effect states on new sound
+        if (!isReverbOn) reverb.drywet(0);
+        if (!isFilterOn) filter.freq(22050);
+        if (!isPitchOn) activeSound.rate(1);
+        activeSound.amp(1);
+      }, err => console.error('Failed to load:', err));
+    });
+  });
+
+  // Setup mediaRecorder for recording from reverb output
   const audioCtx = getAudioContext();
   const dest = audioCtx.createMediaStreamDestination();
   reverb.output.connect(dest);
@@ -165,32 +166,23 @@ function setup() {
     URL.revokeObjectURL(url);
   };
 
-  const recordBtn = createButton('Start Recording');
-  recordBtn.parent('canvas-container').style('margin-top', '15px');
-  recordBtn.mousePressed(() => {
+  recordButton.mousePressed(() => {
     if (mediaRecorder.state === 'inactive') {
       mediaRecorder.start();
-      recordBtn.html('Stop Recording');
+      recordButton.html('Stop Recording');
       console.log('🎙️ Recording started');
     } else if (mediaRecorder.state === 'recording') {
       mediaRecorder.stop();
-      recordBtn.html('Start Recording');
+      recordButton.html('Start Recording');
       console.log('Recording stopped');
     }
   });
 }
 
 function draw() {
-  clear();
-  if (isModulating && sound.isPlaying()) {
+  if (isModulating && activeSound && activeSound.isPlaying()) {
     angle += freqSlider.value() * 0.05;
     const volume = map(sin(angle), -1, 1, 0, 1);
-    sound.setVolume(volume);
+    activeSound.setVolume(volume);
   }
-}
-
-function windowResized() {
-  const container = document.getElementById('canvas-container');
-  const newSize = Math.min(container.offsetWidth * 0.9, 400);
-  resizeCanvas(newSize, newSize);
 }

@@ -178,6 +178,27 @@ input[type="range"]::-moz-range-thumb {
   cursor: pointer;
 }
 
+.effects-console {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+.effects-console button,
+.effects-console input[type="range"] {
+  display: block;
+  width: 100%;
+  margin: 10px auto;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+
+
 /* Responsive layout adjustments */
 @media (max-width: 780px) {
   .grid-container {
