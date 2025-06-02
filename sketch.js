@@ -2,45 +2,61 @@ let activeSound = null;
 let activePlayBtn = null;
 
 let isModulating = false;
-let isReverbOn = false;
 let isFilterOn = false;
-let isPitchOn = false;
+let isTimeStretchOn = false;
+let isDelayOn = false;
 
 let angle = 0;
-let freqSlider, reverbSlider, filterSlider, pitchSlider;
-let reverb, filter;
+let freqSlider, filterSlider, timeStretchSlider, masterGainSlider;
+let delayTimeSlider, delayFeedbackSlider, delayFilterSlider;
 
+let filter;
+let delay;
 let mediaRecorder = null;
 let recordedChunks = [];
-let dest = null; // MediaStreamDestination
+let dest = null;
+
+let masterGain;
 
 function setup() {
   noCanvas();
 
-  // aqui os efeitos
-  reverb = new p5.Reverb();
+  // Effects setup
   filter = new p5.LowPass();
   filter.freq(22050);
   filter.res(10);
 
-  freqSlider = select('#freq-slider');
-  reverbSlider = select('#reverb-slider');
-  filterSlider = select('#filter-slider');
-  pitchSlider = select('#pitch-slider');
+  delay = new p5.Delay();
 
+  // Master gain setup
+  const audioCtx = getAudioContext();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 1.0;
+  masterGain.connect(audioCtx.destination);
+
+  // Sliders
+  freqSlider = select('#freq-slider');
+  filterSlider = select('#filter-slider');
+  timeStretchSlider = select('#time-stretch-slider');
+  masterGainSlider = select('#master-gain-slider');
+
+  delayTimeSlider = select('#delay-time-slider');
+  delayFeedbackSlider = select('#delay-feedback-slider');
+  delayFilterSlider = select('#delay-filter-slider');
+
+  if (masterGainSlider) {
+    masterGainSlider.input(() => {
+      masterGain.gain.value = masterGainSlider.value();
+    });
+  }
+
+  // Modulation (can remove or keep if you want)
   select('#modulation-btn').mousePressed(() => {
     isModulating = !isModulating;
     if (!isModulating && activeSound) activeSound.setVolume(1);
   });
 
-  select('#reverb-btn').mousePressed(() => {
-    isReverbOn = !isReverbOn;
-    updateReverb();
-  });
-  reverbSlider.input(() => {
-    if (isReverbOn) updateReverb();
-  });
-
+  // Filter
   select('#filter-btn').mousePressed(() => {
     isFilterOn = !isFilterOn;
     updateFilter();
@@ -49,14 +65,31 @@ function setup() {
     if (isFilterOn) updateFilter();
   });
 
-  select('#pitch-btn').mousePressed(() => {
-    isPitchOn = !isPitchOn;
-    updatePitch();
+  // Time stretch
+  select('#time-stretch-btn').mousePressed(() => {
+    isTimeStretchOn = !isTimeStretchOn;
+    updateTimeStretch();
   });
-  pitchSlider.input(() => {
-    if (isPitchOn) updatePitch();
+  timeStretchSlider.input(() => {
+    if (isTimeStretchOn) updateTimeStretch();
   });
 
+  // Delay
+  select('#delay-btn').mousePressed(() => {
+    isDelayOn = !isDelayOn;
+    updateDelay();
+  });
+  delayTimeSlider.input(() => {
+    if (isDelayOn) updateDelay();
+  });
+  delayFeedbackSlider.input(() => {
+    if (isDelayOn) updateDelay();
+  });
+  delayFilterSlider.input(() => {
+    if (isDelayOn) updateDelay();
+  });
+
+  // Play buttons
   const containers = selectAll('.canvas-container');
   containers.forEach(container => {
     const audioFile = container.elt.dataset.audio;
@@ -90,7 +123,7 @@ function setup() {
     });
   });
 
-  // recording button
+  // Recording
   const recordBtn = select('#record-btn');
   recordBtn.mousePressed(() => {
     if (!mediaRecorder) {
@@ -119,26 +152,25 @@ function draw() {
 }
 
 function startSound(soundInstance, playBtn) {
+  if (!soundInstance) return;
+
   soundInstance.disconnect();
+  filter.disconnect();
+  delay.disconnect();
+  masterGain.disconnect();
+
   soundInstance.connect(filter);
-  filter.connect(reverb);
-  reverb.process(soundInstance, 3, 2);
+  filter.connect(masterGain);
+  masterGain.connect(getAudioContext().destination);
 
   soundInstance.loop();
   playBtn.html('Stop Sound');
   activeSound = soundInstance;
   activePlayBtn = playBtn;
 
-  updateReverb();
   updateFilter();
-  updatePitch();
-}
-
-function updateReverb() {
-  if (!activeSound) return;
-  const val = isReverbOn ? pow(reverbSlider.value(), 2) : 0;
-  reverb.drywet(val);
-  activeSound.amp(isReverbOn ? 0.4 : 1);
+  updateTimeStretch();
+  updateDelay();
 }
 
 function updateFilter() {
@@ -147,14 +179,64 @@ function updateFilter() {
   filter.freq(isFilterOn ? mappedFreq : 22050);
 }
 
-function updatePitch() {
+function updateTimeStretch() {
   if (!activeSound) return;
-  if (isPitchOn) {
-    let rate = pitchSlider.value() * 2;
-    rate = constrain(rate, 0.1, 4);
+
+  if (isTimeStretchOn) {
+    let sliderVal = parseFloat(timeStretchSlider.value()); // Expected -1 to 1 but here 0.5 to 2 in UI
+    // Adjusting for 0.5 to 2 range, remap to -1 to 1
+    let normalizedVal = map(sliderVal, 0.5, 2, -1, 1);
+    let rate = 1;
+    if (normalizedVal < 0) {
+      rate = map(normalizedVal, -1, 0, 0.5, 1);
+    } else {
+      rate = map(normalizedVal, 0, 1, 1, 2);
+    }
+    rate = constrain(rate, 0.5, 2);
     activeSound.rate(rate);
   } else {
     activeSound.rate(1);
+  }
+}
+
+function updateDelay() {
+  if (!activeSound) return;
+
+  if (isDelayOn) {
+    let sliderVal = parseFloat(delayTimeSlider.value()); // 0 to 2, center 1
+
+    const maxDelay = 3; // max delay in seconds
+    let delayTime = 0;
+
+    if (sliderVal < 1) {
+      // Left side: maxDelay to 0
+      delayTime = map(sliderVal, 0, 1, maxDelay, 0);
+    } else {
+      // Right side: 0 to maxDelay
+      delayTime = map(sliderVal, 1, 2, 0, maxDelay);
+    }
+
+    const feedback = constrain(delayFeedbackSlider.value(), 0, 0.9);
+    const filterFreq = map(delayFilterSlider.value(), 0, 1, 100, 5000);
+
+    delay.delayTime(delayTime);
+    delay.feedback(feedback);
+    delay.filter(filterFreq);
+
+    // Connect delay after filter and before masterGain
+    activeSound.disconnect();
+    activeSound.connect(filter);
+    filter.disconnect();
+    filter.connect(delay);
+    delay.disconnect();
+    delay.connect(masterGain);
+
+  } else {
+    // Bypass delay
+    activeSound.disconnect();
+    activeSound.connect(filter);
+    filter.disconnect();
+    filter.connect(masterGain);
   }
 }
 
@@ -166,19 +248,15 @@ function setupRecorder() {
 
   const audioCtx = getAudioContext();
 
-  if (dest) {
-    // If already created, disconnect and recreate to avoid duplicates
-    dest.disconnect();
-  }
-
+  if (dest) dest.disconnect();
   dest = audioCtx.createMediaStreamDestination();
 
-  reverb.output.disconnect();
-  reverb.output.connect(dest);
+  masterGain.disconnect();
+  masterGain.connect(audioCtx.destination);
+  masterGain.connect(dest);
 
   let options = { mimeType: 'audio/mp4' };
   if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-    console.warn('audio/mp4 not supported, falling back');
     options = { mimeType: 'audio/webm' };
   }
 
