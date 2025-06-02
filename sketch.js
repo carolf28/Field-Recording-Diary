@@ -1,4 +1,3 @@
-// Global vars
 let activeSound = null;
 let activePlayBtn = null;
 
@@ -18,7 +17,7 @@ let dest = null; // MediaStreamDestination
 function setup() {
   noCanvas();
 
-  // Setup global effects
+  // aqui os efeitos
   reverb = new p5.Reverb();
   filter = new p5.LowPass();
   filter.freq(22050);
@@ -91,11 +90,10 @@ function setup() {
     });
   });
 
-  // Setup recording button
+  // recording button
   const recordBtn = select('#record-btn');
   recordBtn.mousePressed(() => {
     if (!mediaRecorder) {
-      // Setup MediaRecorder only when first requested
       setupRecorder();
     }
 
