@@ -19,34 +19,6 @@
   <!-- Main content -->
   <main class="main-content">
 
-
-
-<div class="effects-console">
-  <button id="modulation-btn">Modulation</button>
-  <input type="range" id="freq-slider" min="0.1" max="10" step="0.1" value="1">
-
-  <button id="filter-btn">Filter</button>
-  <input type="range" id="filter-slider" min="0" max="1" step="0.01" value="0">
-
-  <button id="time-stretch-btn">Time Stretch</button>
-  <input type="range" id="time-stretch-slider" min="-1" max="1" step="0.01" value="0">
-
-<button id="delay-btn">Delay</button>
-<input type="range" id="delay-time-slider" min="0" max="2" step="0.01" value="1">
-
-<input type="range" id="delay-feedback-slider" min="0" max="1" step="0.01" value="0.3">
-
-<input type="range" id="delay-filter-slider" min="0" max="1" step="0.01" value="0.5">
-
-
-  <label for="master-gain-slider">Master Volume</label>
-  <input type="range" id="master-gain-slider" min="0" max="2" step="0.01" value="1">
-
-  <button id="record-btn">Start Recording</button>
-</div>
-
-
-
     <!-- Product Grid -->
     <div class="grid-wrapper">
       <div class="grid-container">
@@ -56,8 +28,10 @@
     <img src="nature.jpg" alt="item cover" />
     <!-- p5 canvas will be created here -->
   </div>
+   <div class="item-text">
   <div class="item-title">Field Recording 1</div>
   <div class="item-caption">Mexico</div>
+   </div>
 </div>
 
         <!-- More Items -->
@@ -66,8 +40,10 @@
     <img src="nature.jpg" alt="item cover" />
     <!-- p5 canvas will be created here -->
   </div>
+   <div class="item-text">
   <div class="item-title">Field Recording 2</div>
   <div class="item-caption">Mexico</div>
+  </div>
 </div>
 
 <div class="item canvas-container" id="canvas-container" data-audio="fieldrecording3.mp3">
@@ -75,8 +51,10 @@
     <img src="nature.jpg" alt="item cover" />
      <!-- canvas here -->
   </div>
+     <div class="item-text">
   <div class="item-title">Field Recording 3</div>
   <div class="item-caption">Santa Apolónia</div>
+  </div>
 </div>
 
 
@@ -85,8 +63,10 @@
     <img src="nature.jpg" alt="item cover" />
      <!-- canvas here -->
   </div>
+     <div class="item-text">
   <div class="item-title">Field Recording 1</div>
   <div class="item-caption">Mexico</div>
+  </div>
 </div>
 
 
@@ -95,8 +75,10 @@
     <img src="nature.jpg" alt="item cover" />
     <!-- canvas here -->
   </div>
+     <div class="item-text">
   <div class="item-title">Field Recording 1</div>
   <div class="item-caption">Mexico</div>
+  </div>
 </div>
 
 
@@ -105,8 +87,10 @@
     <img src="nature.jpg" alt="item cover" />
      <!-- canvas here -->
   </div>
+     <div class="item-text">
   <div class="item-title">Field Recording 1</div>
   <div class="item-caption">Mexico</div>
+  </div>
 </div>
 
 
@@ -115,8 +99,10 @@
     <img src="nature.jpg" alt="item cover" />
      <!-- canvas here -->
   </div>
+     <div class="item-text">
   <div class="item-title">Field Recording 1</div>
   <div class="item-caption">Mexico</div>
+  </div>
 </div>
 
 <div class="item canvas-container" id="canvas-container" data-audio="fieldrecording1.mp3">
@@ -124,12 +110,31 @@
     <img src="nature.jpg" alt="item cover" />
      <!-- canvas here -->
   </div>
+     <div class="item-text">
   <div class="item-title">Field Recording 1</div>
   <div class="item-caption">Mexico</div>
+  </div>
+</div>
+</div>
 </div>
 
+  <div class="effects-panel">
+    <div class="effects-console">
+      <button id="modulation-btn">Modulation</button>
+      <input type="range" id="freq-slider" min="0.1" max="10" step="0.1" value="1">
+      <button id="filter-btn">Filter</button>
+      <input type="range" id="filter-slider" min="0" max="1" step="0.01" value="0">
+      <button id="time-stretch-btn">Playback</button>
+      <input type="range" id="time-stretch-slider" min="-1" max="1" step="0.01" value="0">
+      <button id="delay-btn">Delay</button>
+      <input type="range" id="delay-time-slider" min="0" max="2" step="0.01" value="1">
+      <input type="range" id="delay-feedback-slider" min="0" max="1" step="0.01" value="0.3">
+      <input type="range" id="delay-filter-slider" min="0" max="1" step="0.01" value="0.5">
+      <label for="master-gain-slider">Master Volume</label>
+      <input type="range" id="master-gain-slider" min="0" max="2" step="0.01" value="1">
+      <button id="record-btn">Start Recording</button>
     </div>
-
+  </div>
     
   </main>
 </body>

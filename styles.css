@@ -1,42 +1,41 @@
-/* font */
+/* Font */
 .b612-mono-regular {
   font-family: "B612 Mono", monospace;
   font-weight: 400;
   font-style: normal;
 }
-
 .b612-mono-bold {
   font-family: "B612 Mono", monospace;
   font-weight: 700;
   font-style: normal;
 }
-
 .b612-mono-regular-italic {
   font-family: "B612 Mono", monospace;
   font-weight: 400;
   font-style: italic;
 }
-
 .b612-mono-bold-italic {
   font-family: "B612 Mono", monospace;
   font-weight: 700;
   font-style: italic;
 }
-
 button {
   font-family: "B612 Mono", monospace;
   font-size: 0.75rem;
 }
 
-
+/* Global */
 body {
   margin: 0;
   padding: 0;
-  background-color: #F4F4F4; 
-  font-family: "B612 Mono", monospace; 
+  background-color: #F4F4F4;
+  font-family: "B612 Mono", monospace;
   height: 100vh;
   width: 100vw;
-  overflow: auto;
+  display: grid;
+  grid-template-rows: 80px 1fr;
+  overflow: hidden;
+  color: #222;
 }
 
 /* Header */
@@ -46,139 +45,143 @@ body {
   align-items: center;
   padding: 1.5rem;
   font-size: 0.9rem;
+  background-color: #fff;
+  z-index: 1000;
+  border-bottom: 1px solid #ccc;
 }
 
-/* Title */
-.section-title {
-  text-align: center;
-  font-size: 2rem;
-  font-weight: 500;
-  padding-top: 1rem;
-  margin-bottom: 2rem;
-}
-
-.grid-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 2rem 4rem;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.grid-container {
+/* Main layout grid */
+.main-content {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); /* 4 columns */
-  grid-template-rows: repeat(2, auto);   /* 2 rows */
-  gap: 2rem 2rem; /* row gap, column gap */
-  width: 100%;
-  max-width: 1000px; /* total grid width */
-  margin: 0 auto;
-}
-
-/* Item styling */
-.item {
-  text-align: center;
-  padding: 10px;
+  grid-template-columns: 1fr 480px;
+  height: 100%;
+  overflow: hidden;
+  gap: 2rem;
+  padding: 2rem 1rem;
   box-sizing: border-box;
 }
 
-.item img {
+/* Scrollable content */
+.grid-wrapper {
+  overflow-y: auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-right: 1rem;
   width: 100%;
-  height: auto;
-  max-width: 180px;
-  border-radius: 4px;
-  margin: 0 auto 0.5rem;
-  display: block;
+  min-width: 0; /* Important for grid */
 }
 
-.item-title {
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  margin-bottom: 0.25rem;
-}
-
-.item-price {
-  font-size: 0.75rem;
-  color: #444;
-}
-
-/* Canvas container - overlay canvas on top of image */
-.canvas-container {
+/* Effects panel */
+.effects-panel {
   position: relative;
-  width: 180px;
-  height: 180px;
-  margin: 0 auto 3rem;
-}
-
-/* The book cover image */
-.canvas-container img {
   width: 100%;
-  height: auto;     
-  max-width: 180px;
-  border-radius: 4px;
-  margin: 0 auto 0.5rem;
-  display: block;
-  object-fit: cover;
+  min-width: 0; /* Important for grid */
 }
 
-/* The canvas itself */
+/* Effects console styling */
+.effects-console {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: fit-content;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  padding: 1rem;
+   max-width: 480px; 
+}
+
+/* Buttons and sliders inside effects panel */
+.effects-console button,
+.effects-console input[type="range"] {
+  display: block;
+  width: 100%;
+  margin: 10px auto;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Each item as a row card */
+.item.canvas-container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+  padding: 1rem;
+  gap: 1rem;
+}
+.item.canvas-container:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* Image */
+.canvas-container img {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+}
+
+/* Canvas */
 .canvas-container canvas {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 160px;
+  height: 160px;
   pointer-events: none;
   z-index: 10;
   display: block;
   border-radius: 4px;
 }
 
-/* Controls inside canvas-container */
-.canvas-container button,
-.canvas-container input[type="range"] {
-  position: relative;
-  z-index: 20;
-  display: block;
-  width: 100%;
-  max-width: 280px;
-  margin: 8px auto;
-  font-size: 0.75rem;
-  box-sizing: border-box;
-  cursor: pointer;
-  opacity: 1 !important;
-  visibility: visible !important;
+/* Text + Controls */
+.item-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-/* Play button specific */
+/* Title, caption */
+.item-title {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+.item-caption {
+  font-size: 0.75rem;
+  color: #444;
+  margin-bottom: 0.5rem;
+}
+
+/* Play button */
 #play-sound-btn {
   padding: 6px 8px;
-  width: 150px;
-  margin: 0 auto 10px auto;
-  display: block;
-
+  margin-top: 0.5rem;
+  background-color: #444;
+  color: #fff;
   text-transform: uppercase;
-    border: none;
-    padding: 5px 7px 4px;
-    background-color: #444;
-
-    border-radius: 0;
-    text-align: center;
-    width: fit-content;
-    transition: background-color .3s ease;
+  border: none;
+  border-radius: 0;
+  text-align: center;
+  cursor: pointer;
+  width: fit-content;
+  transition: background-color 0.3s ease;
+}
+#play-sound-btn:hover {
+  background-color: #222;
 }
 
-/* General button and slider styling */
-button,
-input[type="range"] {
-  display: block !important;
-  width: 100% !important;
-  margin: 10px 0 !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
+/* Range sliders */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
@@ -189,9 +192,8 @@ input[type="range"] {
   outline: none;
   cursor: pointer;
   transition: background 0.3s ease;
+  margin: 10px 0;
 }
-
-/* Webkit (Chrome, Safari) thumb */
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
@@ -205,8 +207,6 @@ input[type="range"]::-webkit-slider-thumb {
 input[type="range"]::-webkit-slider-thumb:hover {
   transform: scale(1.3);
 }
-
-
 input[type="range"]::-moz-range-thumb {
   width: 12px;
   height: 12px;
@@ -216,63 +216,47 @@ input[type="range"]::-moz-range-thumb {
   cursor: pointer;
 }
 
-.effects-console {
-  max-width: 280px;
-  margin: 2rem auto;
-  padding: 1rem;
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+/* Title */
+.section-title {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 500;
+  padding-top: 1rem;
+  margin-bottom: 2rem;
+  position: fixed;
 }
 
-.effects-console button,
-.effects-console input[type="range"] {
-  display: block;
-  width: 100%;
-  margin: 10px auto;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-
-
-/* Responsive layout adjustments */
-@media (max-width: 780px) {
-  .grid-container {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-
+/* Responsive (mobile) */
+@media (max-width: 600px) {
+  .main-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
   }
 
-  .item {
-    max-width: 100%;
-    margin: 0 auto;
-  }
-
-  .canvas-container {
-    width: 90vw;
-    height: 90vw; /* enforce square shape */
-    margin-bottom: 2rem;
-  }
-
-  .canvas-container canvas,
-  .canvas-container img {
+  .effects-console {
     width: 100%;
-    height: 100%;
+    position: static;
   }
 
-  .canvas-container button,
-  .canvas-container input[type="range"] {
-    max-width: 100%;
-    font-size: 14px;
+  .item.canvas-container {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
   }
 
-  .section-title {
-    margin-bottom: 2rem;
+  .canvas-container img,
+  .canvas-container canvas {
+    width: 100%;
+    height: auto;
   }
 
-  .grid-wrapper {
-    padding-bottom: 5rem;
+  .item-text {
+    padding-top: 1rem;
+    align-items: center;
+  }
+
+  #play-sound-btn {
+    margin-left: auto;
+    margin-right: auto;
   }
 }
-
