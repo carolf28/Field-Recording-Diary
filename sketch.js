@@ -14,6 +14,8 @@ let filter;       // Dry filter
 let delay;
 let delayFilter;  // Filter for delayed signal
 
+let wetGain, dryGain;  // Gains for delay wet/dry mix
+
 let mediaRecorder = null;
 let recordedChunks = [];
 let dest = null;
@@ -38,6 +40,17 @@ function setup() {
   masterGain.gain.value = 1.0;
   masterGain.connect(audioCtx.destination);
 
+  // Create wet/dry gain nodes for delay effect
+  wetGain = audioCtx.createGain();
+  dryGain = audioCtx.createGain();
+  wetGain.gain.value = 0;
+  dryGain.gain.value = 1;
+
+  // Connect delay chain
+  delay.connect(delayFilter);
+  delayFilter.connect(wetGain);
+  wetGain.connect(masterGain);
+
   // Sliders
   freqSlider = select('#freq-slider');
   filterSlider = select('#filter-slider');
@@ -53,47 +66,45 @@ function setup() {
     });
   }
 
-  select('#modulation-btn').mousePressed(() => {
-    isModulating = !isModulating;
-    if (!isModulating && activeSound) activeSound.setVolume(1);
-  });
-
-  select('#filter-btn').mousePressed(() => {
-    isFilterOn = !isFilterOn;
-    updateFilter();
-  });
+  if (freqSlider) {
+    freqSlider.input(() => {
+      isModulating = freqSlider.value() > 0;
+    });
+  }
 
   if (filterSlider) {
     filterSlider.input(() => {
-      if (isFilterOn) updateFilter();
+      // Cutoff filter off at default (slider at 0)
+      isFilterOn = filterSlider.value() > 0;
+      updateFilter();
     });
   }
-
-  select('#time-stretch-btn').mousePressed(() => {
-    isTimeStretchOn = !isTimeStretchOn;
-    updateTimeStretch();
-  });
 
   if (timeStretchSlider) {
     timeStretchSlider.input(() => {
-      if (isTimeStretchOn) updateTimeStretch();
+      isTimeStretchOn = timeStretchSlider.value() != 0;
+      updateTimeStretch();
     });
   }
 
-  // Delay toggle button (optional: add one if you want delay on/off)
-  // Uncomment below if you want to control delay on/off with a button:
-  // select('#delay-btn').mousePressed(() => {
-  //   isDelayOn = !isDelayOn;
-  //   updateDelay();
-  // });
-
-  // Instead, here delay is always applied when sliders move and isDelayOn is true:
-  // Let's turn delay ON always for testing:
-  isDelayOn = true;
-
-  if (delayTimeSlider) delayTimeSlider.input(() => updateDelay());
-  if (delayFeedbackSlider) delayFeedbackSlider.input(() => updateDelay());
-  if (delayFilterSlider) delayFilterSlider.input(() => updateDelay());
+  if (delayTimeSlider) {
+    delayTimeSlider.input(() => {
+      isDelayOn = delayTimeSlider.value() > 0 || delayFeedbackSlider.value() > 0 || delayFilterSlider.value() > 0;
+      updateDelay();
+    });
+  }
+  if (delayFeedbackSlider) {
+    delayFeedbackSlider.input(() => {
+      isDelayOn = delayTimeSlider.value() > 0 || delayFeedbackSlider.value() > 0 || delayFilterSlider.value() > 0;
+      updateDelay();
+    });
+  }
+  if (delayFilterSlider) {
+    delayFilterSlider.input(() => {
+      isDelayOn = delayTimeSlider.value() > 0 || delayFeedbackSlider.value() > 0 || delayFilterSlider.value() > 0;
+      updateDelay();
+    });
+  }
 
   const containers = selectAll('.canvas-container');
   containers.forEach(container => {
@@ -150,8 +161,11 @@ function setup() {
 function draw() {
   if (isModulating && activeSound && activeSound.isPlaying()) {
     angle += freqSlider ? freqSlider.value() * 0.05 : 0.05;
-    const volume = map(sin(angle), -1, 1, 0, 1);
+    // Clamp volume between 0.3 and 1 to avoid full silence
+    const volume = map(sin(angle), -1, 1, 0.3, 1);
     activeSound.setVolume(volume);
+  } else if (activeSound && activeSound.isPlaying()) {
+    activeSound.setVolume(1); // Reset volume to full when modulation off
   }
 }
 
@@ -159,16 +173,22 @@ function startSound(soundInstance, playBtn) {
   if (!soundInstance) return;
 
   soundInstance.disconnect();
-  filter.disconnect();
-  delay.disconnect();
-  delayFilter.disconnect();
-  masterGain.disconnect();
 
+  // Connect soundInstance to filter
   soundInstance.connect(filter);
-  filter.connect(masterGain);
-  masterGain.connect(getAudioContext().destination);
+
+  // Disconnect previous connections on filter
+  filter.disconnect();
+
+  // Split filter output to dryGain and delay input
+  filter.connect(dryGain);
+  filter.connect(delay);
+
+  dryGain.connect(masterGain);
 
   soundInstance.loop();
+  soundInstance.setVolume(1);  // Ensure starting volume is full
+
   playBtn.html('Stop Sound');
   activeSound = soundInstance;
   activePlayBtn = playBtn;
@@ -186,14 +206,8 @@ function updateFilter() {
 
 function updateTimeStretch() {
   if (!activeSound) return;
-
-  if (!isTimeStretchOn) {
-    activeSound.rate(1);
-    return;
-  }
-
-  const val = parseFloat(timeStretchSlider.value());
-  let rate = val < 0 ? map(val, -1, 0, 0.5, 1) : map(val, 0, 1, 1, 2);
+  let val = timeStretchSlider.value();
+  let rate = isTimeStretchOn ? map(val, -1, 1, 0.5, 2) : 1;
   rate = constrain(rate, 0.5, 2);
   activeSound.rate(rate);
 }
@@ -201,33 +215,28 @@ function updateTimeStretch() {
 function updateDelay() {
   if (!activeSound) return;
 
-  activeSound.disconnect();
-  filter.disconnect();
-  delay.disconnect();
-  delayFilter.disconnect();
-  masterGain.disconnect();
+  const audioCtx = getAudioContext();
 
-  const delayTime = map(delayTimeSlider.value(), 0, 1, 0, 1.5);
-  const feedback = constrain(delayFeedbackSlider.value(), 0.1, 0.9);
+  const delayTimeTarget = map(delayTimeSlider.value(), 0, 1, 0, 1.5);
+  if (delay.delayTime.setTargetAtTime) {
+    delay.delayTime.setTargetAtTime(delayTimeTarget, audioCtx.currentTime, 0.05);
+  } else {
+    delay.delayTime(delayTimeTarget);
+  }
+
+  const feedback = constrain(delayFeedbackSlider.value(), 0.01, 0.7);
   const filterFreq = map(delayFilterSlider.value(), 0, 1, 100, 10000);
 
-  delay.delayTime(delayTime);
   delay.feedback(feedback);
   delay.filter(filterFreq);
 
   if (isDelayOn) {
-    activeSound.connect(filter);
-    filter.connect(masterGain);
-
-    filter.connect(delay);
-    delay.connect(delayFilter);
-    delayFilter.connect(masterGain);
+    wetGain.gain.value = 0.5;
+    dryGain.gain.value = 0.5;
   } else {
-    activeSound.connect(filter);
-    filter.connect(masterGain);
+    wetGain.gain.value = 0;
+    dryGain.gain.value = 1;
   }
-
-  masterGain.connect(getAudioContext().destination);
 }
 
 function setupRecorder() {
@@ -256,10 +265,25 @@ function setupRecorder() {
   };
 
   mediaRecorder.onstop = () => {
-    const blob = new Blob(recordedChunks, { type: recordedChunks[0].type });
+    const mimeType = mediaRecorder.mimeType || 'audio/webm';
+    const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
+    const blob = new Blob(recordedChunks, { type: mimeType });
+    recordedChunks = [];
+
     const url = URL.createObjectURL(blob);
-    const a = createA(url, 'Download Recording');
-    a.attribute('download', 'recording.mp4');
-    a.parent(document.body);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = `recorded_output.${extension}`;
+    document.body.appendChild(a);
+
+    // Trigger download
+    a.click();
+
+    // Remove the anchor after a short delay to ensure download starts
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
   };
 }
