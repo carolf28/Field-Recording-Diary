@@ -53,7 +53,7 @@ body {
 /* Main layout grid */
 .main-content {
   display: grid;
-  grid-template-columns: 1fr 480px;
+  grid-template-columns: 2fr 50%;
   height: 100%;
   overflow: hidden;
   gap: 2rem;
@@ -78,11 +78,14 @@ body {
   position: relative;
   width: 100%;
   min-width: 0; /* Important for grid */
+display: flex;
+justify-content: center;
+  align-items: center;
+    height: 100%; 
 }
 
 /* Effects console styling */
 .effects-console {
-  position: sticky;
   top: 0;
   align-self: start;
   height: fit-content;
@@ -91,7 +94,7 @@ body {
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0,0,0,0.05);
   padding: 1rem;
-   max-width: 480px; 
+  width: 380px; 
 }
 
 /* Buttons and sliders inside effects panel */
@@ -110,9 +113,9 @@ body {
   flex-direction: row;
   align-items: flex-start;
   background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   overflow: hidden;
+  border: 1px #000 solid;
+  border-bottom: none;
   transition: box-shadow 0.2s ease;
   padding: 1rem;
   gap: 1rem;
