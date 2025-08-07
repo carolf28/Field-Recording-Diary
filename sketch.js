@@ -80,14 +80,20 @@ function setup() {
     });
   }
 
-  select('#delay-btn').mousePressed(() => {
-    isDelayOn = !isDelayOn;
-    updateDelay();
-  });
+  // Delay toggle button (optional: add one if you want delay on/off)
+  // Uncomment below if you want to control delay on/off with a button:
+  // select('#delay-btn').mousePressed(() => {
+  //   isDelayOn = !isDelayOn;
+  //   updateDelay();
+  // });
 
-  if (delayTimeSlider) delayTimeSlider.input(() => { if (isDelayOn) updateDelay(); });
-  if (delayFeedbackSlider) delayFeedbackSlider.input(() => { if (isDelayOn) updateDelay(); });
-  if (delayFilterSlider) delayFilterSlider.input(() => { if (isDelayOn) updateDelay(); });
+  // Instead, here delay is always applied when sliders move and isDelayOn is true:
+  // Let's turn delay ON always for testing:
+  isDelayOn = true;
+
+  if (delayTimeSlider) delayTimeSlider.input(() => updateDelay());
+  if (delayFeedbackSlider) delayFeedbackSlider.input(() => updateDelay());
+  if (delayFilterSlider) delayFilterSlider.input(() => updateDelay());
 
   const containers = selectAll('.canvas-container');
   containers.forEach(container => {
@@ -202,13 +208,12 @@ function updateDelay() {
   masterGain.disconnect();
 
   const delayTime = map(delayTimeSlider.value(), 0, 1, 0, 1.5);
-  const feedback = constrain(delayFeedbackSlider.value(), 0.01, 0.7);
+  const feedback = constrain(delayFeedbackSlider.value(), 0.1, 0.9);
   const filterFreq = map(delayFilterSlider.value(), 0, 1, 100, 10000);
 
   delay.delayTime(delayTime);
   delay.feedback(feedback);
   delay.filter(filterFreq);
-  delayFilter.freq(22050);
 
   if (isDelayOn) {
     activeSound.connect(filter);
@@ -251,18 +256,10 @@ function setupRecorder() {
   };
 
   mediaRecorder.onstop = () => {
-    const mimeType = mediaRecorder.mimeType || 'audio/webm';
-    const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
-    const blob = new Blob(recordedChunks, { type: mimeType });
-    recordedChunks = [];
-
+    const blob = new Blob(recordedChunks, { type: recordedChunks[0].type });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    a.download = `recorded_output.${extension}`;
-    document.body.appendChild(a);
-    a.click();
-    URL.revokeObjectURL(url);
+    const a = createA(url, 'Download Recording');
+    a.attribute('download', 'recording.mp4');
+    a.parent(document.body);
   };
 }
