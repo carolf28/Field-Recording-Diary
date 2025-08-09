@@ -5,21 +5,22 @@ let isModulating = false;
 let isFilterOn = false;
 let isTimeStretchOn = false;
 let isDelayOn = false;
+let isReverbOn = false;
 
 let angle = 0;
 let freqSlider, filterSlider, timeStretchSlider, masterGainSlider;
 let delayTimeSlider, delayFeedbackSlider, delayFilterSlider;
+let reverbWetSlider;
 
-let filter;       // Dry filter
+let filter;       
 let delay;
-let delayFilter;  // Filter for delayed signal
+let delayFilter;  
+let reverb;
 
-let wetGain, dryGain;  // Gains for delay wet/dry mix
-
+let dryGain, delayWetGain, reverbWetGain;
 let mediaRecorder = null;
 let recordedChunks = [];
 let dest = null;
-
 let masterGain;
 
 function setup() {
@@ -30,28 +31,68 @@ function setup() {
   filter.res(10);
 
   delay = new p5.Delay();
-
   delayFilter = new p5.LowPass();
   delayFilter.freq(22050);
   delayFilter.res(10);
+
+  reverb = new p5.Reverb();
 
   const audioCtx = getAudioContext();
   masterGain = audioCtx.createGain();
   masterGain.gain.value = 1.0;
   masterGain.connect(audioCtx.destination);
 
-  // Create wet/dry gain nodes for delay effect
-  wetGain = audioCtx.createGain();
   dryGain = audioCtx.createGain();
-  wetGain.gain.value = 0;
   dryGain.gain.value = 1;
 
-  // Connect delay chain
-  delay.connect(delayFilter);
-  delayFilter.connect(wetGain);
-  wetGain.connect(masterGain);
+  delayWetGain = audioCtx.createGain();
+  delayWetGain.gain.value = 0;
 
-  // Sliders
+  reverbWetGain = audioCtx.createGain();
+  reverbWetGain.gain.value = 0;
+
+  delay.connect(delayFilter);
+  delayFilter.connect(delayWetGain);
+  delayWetGain.connect(masterGain);
+
+  reverb.connect(reverbWetGain);
+  reverbWetGain.connect(masterGain);
+
+  // Button click toggles
+  document.querySelectorAll('.effects-console button[data-effect]').forEach(button => {
+    button.addEventListener('click', function () {
+      this.classList.toggle('active');
+      const effect = this.dataset.effect;
+      toggleEffect(effect, this.classList.contains('active'));
+    });
+  });
+
+  // Sliders auto-activate effects
+  const sliderEffectMap = {
+    'freq-slider': 'modulation',
+    'filter-slider': 'filter',
+    'time-stretch-slider': 'time-stretch',
+    'delay-time-slider': 'delay',
+    'delay-feedback-slider': 'delay',
+    'delay-filter-slider': 'delay',
+    'reverb-wet-slider': 'reverb'
+  };
+
+  Object.entries(sliderEffectMap).forEach(([sliderId, effect]) => {
+    const slider = document.getElementById(sliderId);
+    const button = document.querySelector(`button[data-effect="${effect}"]`);
+    
+    if (slider && button) {
+      slider.addEventListener('input', () => {
+        if (!button.classList.contains('active')) {
+          button.classList.add('active');
+          toggleEffect(effect, true);
+        }
+      });
+    }
+  });
+
+  // Get slider references
   freqSlider = select('#freq-slider');
   filterSlider = select('#filter-slider');
   timeStretchSlider = select('#time-stretch-slider');
@@ -59,6 +100,7 @@ function setup() {
   delayTimeSlider = select('#delay-time-slider');
   delayFeedbackSlider = select('#delay-feedback-slider');
   delayFilterSlider = select('#delay-filter-slider');
+  reverbWetSlider = select('#reverb-wet-slider');
 
   if (masterGainSlider) {
     masterGainSlider.input(() => {
@@ -67,50 +109,27 @@ function setup() {
   }
 
   if (freqSlider) {
-    freqSlider.input(() => {
-      isModulating = freqSlider.value() > 0;
-    });
+    freqSlider.input(() => { isModulating = freqSlider.value() > 0; });
   }
 
   if (filterSlider) {
-    filterSlider.input(() => {
-      // Cutoff filter off at default (slider at 0)
-      isFilterOn = filterSlider.value() > 0;
-      updateFilter();
-    });
+    filterSlider.input(() => { isFilterOn = filterSlider.value() > 0; updateFilter(); });
   }
 
   if (timeStretchSlider) {
-    timeStretchSlider.input(() => {
-      isTimeStretchOn = timeStretchSlider.value() != 0;
-      updateTimeStretch();
-    });
+    timeStretchSlider.input(() => { isTimeStretchOn = timeStretchSlider.value() != 0; updateTimeStretch(); });
   }
 
-  if (delayTimeSlider) {
-    delayTimeSlider.input(() => {
-      isDelayOn = delayTimeSlider.value() > 0 || delayFeedbackSlider.value() > 0 || delayFilterSlider.value() > 0;
-      updateDelay();
-    });
-  }
-  if (delayFeedbackSlider) {
-    delayFeedbackSlider.input(() => {
-      isDelayOn = delayTimeSlider.value() > 0 || delayFeedbackSlider.value() > 0 || delayFilterSlider.value() > 0;
-      updateDelay();
-    });
-  }
-  if (delayFilterSlider) {
-    delayFilterSlider.input(() => {
-      isDelayOn = delayTimeSlider.value() > 0 || delayFeedbackSlider.value() > 0 || delayFilterSlider.value() > 0;
-      updateDelay();
-    });
-  }
+  if (delayTimeSlider) delayTimeSlider.input(() => updateDelay());
+  if (delayFeedbackSlider) delayFeedbackSlider.input(() => updateDelay());
+  if (delayFilterSlider) delayFilterSlider.input(() => updateDelay());
+  if (reverbWetSlider) reverbWetSlider.input(() => updateReverb());
 
+  // Sound loading for each container
   const containers = selectAll('.canvas-container');
   containers.forEach(container => {
     const audioFile = container.elt.dataset.audio;
     let soundInstance = null;
-
     const playBtn = createButton('Play Sound').parent(container);
     playBtn.style('margin-top', '10px');
 
@@ -143,16 +162,13 @@ function setup() {
   if (recordBtn) {
     recordBtn.mousePressed(() => {
       if (!mediaRecorder) setupRecorder();
-
       if (mediaRecorder.state === 'inactive') {
         recordedChunks = [];
         mediaRecorder.start();
         recordBtn.html('Stop Recording');
-        console.log('🎙️ Recording started');
-      } else if (mediaRecorder.state === 'recording') {
+      } else {
         mediaRecorder.stop();
         recordBtn.html('Start Recording');
-        console.log('Recording stopped');
       }
     });
   }
@@ -161,41 +177,41 @@ function setup() {
 function draw() {
   if (isModulating && activeSound && activeSound.isPlaying()) {
     angle += freqSlider ? freqSlider.value() * 0.05 : 0.05;
-    // Clamp volume between 0.3 and 1 to avoid full silence
     const volume = map(sin(angle), -1, 1, 0.3, 1);
     activeSound.setVolume(volume);
   } else if (activeSound && activeSound.isPlaying()) {
-    activeSound.setVolume(1); // Reset volume to full when modulation off
+    activeSound.setVolume(1);
+  }
+}
+
+function toggleEffect(effect, isActive) {
+  switch (effect) {
+    case 'modulation': isModulating = isActive; break;
+    case 'filter': isFilterOn = isActive; updateFilter(); break;
+    case 'time-stretch': isTimeStretchOn = isActive; updateTimeStretch(); break;
+    case 'delay': isDelayOn = isActive; updateDelay(); break;
+    case 'reverb': isReverbOn = isActive; updateReverb(); break;
   }
 }
 
 function startSound(soundInstance, playBtn) {
   if (!soundInstance) return;
-
   soundInstance.disconnect();
-
-  // Connect soundInstance to filter
   soundInstance.connect(filter);
-
-  // Disconnect previous connections on filter
   filter.disconnect();
-
-  // Split filter output to dryGain and delay input
   filter.connect(dryGain);
   filter.connect(delay);
-
+  filter.connect(reverb);
   dryGain.connect(masterGain);
-
   soundInstance.loop();
-  soundInstance.setVolume(1);  // Ensure starting volume is full
-
+  soundInstance.setVolume(1);
   playBtn.html('Stop Sound');
   activeSound = soundInstance;
   activePlayBtn = playBtn;
-
   updateFilter();
   updateTimeStretch();
   updateDelay();
+  updateReverb();
 }
 
 function updateFilter() {
@@ -207,83 +223,66 @@ function updateFilter() {
 function updateTimeStretch() {
   if (!activeSound) return;
   let val = timeStretchSlider.value();
-  let rate = isTimeStretchOn ? map(val, -1, 1, 0.5, 2) : 1;
+  let rate = val != 0 ? map(val, -1, 1, 0.5, 2) : 1;
   rate = constrain(rate, 0.5, 2);
   activeSound.rate(rate);
 }
 
 function updateDelay() {
   if (!activeSound) return;
-
   const audioCtx = getAudioContext();
-
   const delayTimeTarget = map(delayTimeSlider.value(), 0, 1, 0, 1.5);
   if (delay.delayTime.setTargetAtTime) {
     delay.delayTime.setTargetAtTime(delayTimeTarget, audioCtx.currentTime, 0.05);
   } else {
     delay.delayTime(delayTimeTarget);
   }
-
   const feedback = constrain(delayFeedbackSlider.value(), 0.01, 0.7);
   const filterFreq = map(delayFilterSlider.value(), 0, 1, 100, 10000);
-
   delay.feedback(feedback);
   delay.filter(filterFreq);
+  const delayWetVal = (delayTimeSlider.value() > 0 || delayFeedbackSlider.value() > 0 || delayFilterSlider.value() > 0) ? 0.5 : 0;
+  delayWetGain.gain.value = delayWetVal;
+  dryGain.gain.value = 1 - delayWetVal - reverbWetGain.gain.value;
+}
 
-  if (isDelayOn) {
-    wetGain.gain.value = 0.5;
-    dryGain.gain.value = 0.5;
-  } else {
-    wetGain.gain.value = 0;
-    dryGain.gain.value = 1;
-  }
+function updateReverb() {
+  if (!activeSound) return;
+  const wetVal = reverbWetSlider.value();
+  isReverbOn = wetVal > 0;
+  reverbWetGain.gain.value = wetVal;
+  dryGain.gain.value = 1 - wetVal - delayWetGain.gain.value;
+  reverb.set(wetVal * 5, 1.2);
 }
 
 function setupRecorder() {
-  if (!activeSound) {
-    console.warn('No active sound to record');
-    return;
-  }
-
+  if (!activeSound) return;
   const audioCtx = getAudioContext();
   if (dest) dest.disconnect();
   dest = audioCtx.createMediaStreamDestination();
-
   masterGain.disconnect();
   masterGain.connect(audioCtx.destination);
   masterGain.connect(dest);
-
   let options = { mimeType: 'audio/mp4' };
   if (!MediaRecorder.isTypeSupported(options.mimeType)) {
     options = { mimeType: 'audio/webm' };
   }
-
   mediaRecorder = new MediaRecorder(dest.stream, options);
-
   mediaRecorder.ondataavailable = (event) => {
     if (event.data.size > 0) recordedChunks.push(event.data);
   };
-
   mediaRecorder.onstop = () => {
     const mimeType = mediaRecorder.mimeType || 'audio/webm';
     const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
     const blob = new Blob(recordedChunks, { type: mimeType });
     recordedChunks = [];
-
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.style.display = 'none';
     a.href = url;
     a.download = `recorded_output.${extension}`;
     document.body.appendChild(a);
-
-    // Trigger download
     a.click();
-
-    // Remove the anchor after a short delay to ensure download starts
-    setTimeout(() => {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 100);
+    URL.revokeObjectURL(url);
   };
 }

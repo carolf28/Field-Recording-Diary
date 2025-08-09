@@ -28,22 +28,23 @@ button {
 body {
   margin: 0;
   padding: 0;
-  background-color: #F4F4F4;
+  background-color: #FFF;
   font-family: "B612 Mono", monospace;
   height: 100vh;
   width: 100vw;
   display: grid;
-  grid-template-rows: 80px 1fr;
+  grid-template-rows: 50px 1fr; /* Header + content */
   overflow: hidden;
   color: #222;
 }
 
 /* Header */
 .site-header {
+  height: 50px; /* fixed height for header */
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem;
+  padding: 0 1.5rem;
   font-size: 0.9rem;
   background-color: #fff;
   z-index: 1000;
@@ -54,17 +55,16 @@ body {
 .main-content {
   display: grid;
   grid-template-columns: 2fr 50%;
-  height: 100%;
+  height: 100%; /* fill available space below header */
   overflow: hidden;
   gap: 2rem;
-  padding: 2rem 1rem;
   box-sizing: border-box;
 }
 
 /* Scrollable content */
 .grid-wrapper {
-  overflow-y: auto;
-  height: 100%;
+  overflow-y: auto; /* enable vertical scroll */
+  height: 100%;     /* fill the main-content height */
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -73,38 +73,59 @@ body {
   min-width: 0; /* Important for grid */
 }
 
-/* Effects panel */
 .effects-panel {
-  position: relative;
+  display: flex;
+  justify-content: center; /* center horizontally */
+  align-items: center;     /* center vertically */
+  height: 100vh;           /* full viewport height */
   width: 100%;
-  min-width: 0; /* Important for grid */
-display: flex;
-justify-content: center;
-  align-items: center;
-    height: 100%; 
+  min-width: 0;
+  position: relative;
 }
 
-/* Effects console styling */
 .effects-console {
-  top: 0;
-  align-self: start;
-  height: fit-content;
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  background: #F2F2F2;
   padding: 1rem;
-  width: 380px; 
+  width: 380px;
+  box-sizing: border-box;
+  top: auto;
+  align-self: center;
 }
 
 /* Buttons and sliders inside effects panel */
-.effects-console button,
 .effects-console input[type="range"] {
   display: block;
   width: 100%;
-  margin: 10px auto;
+  margin: 15px auto;
   font-size: 14px;
   cursor: pointer;
+}
+
+.effects-console button {
+    display: block;
+    width: 100%;
+    text-align: center;
+    border: 1px solid lightgrey;
+    padding: 8px 8px;
+    text-decoration: none;
+    text-transform: uppercase;
+    background-color: #D3D3D3;
+    color: #fff;
+    cursor: pointer;
+}
+
+/* Active state */
+.effects-console button.active {
+    color: #000;
+    background-color: white;
+}
+
+/* Disabled state */
+.effects-console button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #b0b0b0;
+    color: #666;
 }
 
 /* Each item as a row card */
