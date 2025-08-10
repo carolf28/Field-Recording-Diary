@@ -58,7 +58,7 @@ function setup() {
   reverb.connect(reverbWetGain);
   reverbWetGain.connect(masterGain);
 
-  // Button click toggles
+  // Button click toggles for effects
   document.querySelectorAll('.effects-console button[data-effect]').forEach(button => {
     button.addEventListener('click', function () {
       this.classList.toggle('active');
@@ -67,7 +67,7 @@ function setup() {
     });
   });
 
-  // Sliders auto-activate effects
+  // Sliders auto-activate effects when changed
   const sliderEffectMap = {
     'freq-slider': 'modulation',
     'filter-slider': 'filter',
@@ -125,20 +125,24 @@ function setup() {
   if (delayFilterSlider) delayFilterSlider.input(() => updateDelay());
   if (reverbWetSlider) reverbWetSlider.input(() => updateReverb());
 
-  // Sound loading for each container
+  // Sound loading for each container and play button setup
   const containers = selectAll('.canvas-container');
   containers.forEach(container => {
     const audioFile = container.elt.dataset.audio;
     let soundInstance = null;
-    const playBtn = createButton('Play Sound').parent(container);
-    playBtn.style('margin-top', '10px');
-
+    const playBtn = createButton('').parent(container);
+    
+    // Add a CSS class instead of inline styles
+    playBtn.addClass('my-play-button paused'); // start with paused state
+    
     playBtn.mousePressed(async () => {
       await userStartAudio();
 
       if (activeSound && activeSound.isPlaying() && activeSound !== soundInstance) {
         activeSound.stop();
-        if (activePlayBtn) activePlayBtn.html('Play Sound');
+        if (activePlayBtn) {
+          activePlayBtn.removeClass('playing').addClass('paused');
+        }
       }
 
       if (!soundInstance) {
@@ -148,7 +152,7 @@ function setup() {
       } else {
         if (soundInstance.isPlaying()) {
           soundInstance.stop();
-          playBtn.html('Play Sound');
+          playBtn.removeClass('playing').addClass('paused');
           activeSound = null;
           activePlayBtn = null;
         } else {
@@ -158,6 +162,7 @@ function setup() {
     });
   });
 
+  // Recording button
   const recordBtn = select('#record-btn');
   if (recordBtn) {
     recordBtn.mousePressed(() => {
@@ -221,7 +226,8 @@ function startSound(soundInstance, playBtn) {
   dryGain.connect(masterGain);
   soundInstance.loop();
   soundInstance.setVolume(1);
-  playBtn.html('Stop Sound');
+  // Toggle button classes instead of text
+  playBtn.removeClass('paused').addClass('playing');
   activeSound = soundInstance;
   activePlayBtn = playBtn;
   updateFilter();
