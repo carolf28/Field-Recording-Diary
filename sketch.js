@@ -72,9 +72,9 @@ function setup() {
     'freq-slider': 'modulation',
     'filter-slider': 'filter',
     'time-stretch-slider': 'time-stretch',
-    'delay-time-slider': 'delay',
-    'delay-feedback-slider': 'delay',
-    'delay-filter-slider': 'delay',
+    'delay-time-slider': 'delay-time',
+    'delay-feedback-slider': 'delay-feedback',
+    'delay-filter-slider': 'delay-filter',
     'reverb-wet-slider': 'reverb'
   };
 
@@ -186,11 +186,27 @@ function draw() {
 
 function toggleEffect(effect, isActive) {
   switch (effect) {
-    case 'modulation': isModulating = isActive; break;
-    case 'filter': isFilterOn = isActive; updateFilter(); break;
-    case 'time-stretch': isTimeStretchOn = isActive; updateTimeStretch(); break;
-    case 'delay': isDelayOn = isActive; updateDelay(); break;
-    case 'reverb': isReverbOn = isActive; updateReverb(); break;
+    case 'modulation': 
+      isModulating = isActive; 
+      break;
+    case 'filter': 
+      isFilterOn = isActive; 
+      updateFilter(); 
+      break;
+    case 'time-stretch': 
+      isTimeStretchOn = isActive; 
+      updateTimeStretch(); 
+      break;
+    case 'delay-time':
+    case 'delay-feedback':
+    case 'delay-filter':
+      isDelayOn = isActive; 
+      updateDelay(); 
+      break;
+    case 'reverb': 
+      isReverbOn = isActive; 
+      updateReverb(); 
+      break;
   }
 }
 
@@ -280,9 +296,15 @@ function setupRecorder() {
     const a = document.createElement('a');
     a.style.display = 'none';
     a.href = url;
-    a.download = `recorded_output.${extension}`;
+    a.download = `recording_${Date.now()}.${extension}`;
     document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
   };
 }
+
+window.setup = setup;
+window.draw = draw;
