@@ -1,26 +1,42 @@
 /* Font */
-.b612-mono-regular {
-  font-family: "B612 Mono", monospace;
+.dm-mono-light {
+  font-family: "DM Mono", monospace;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.dm-mono-regular {
+  font-family: "DM Mono", monospace;
   font-weight: 400;
   font-style: normal;
 }
-.b612-mono-bold {
-  font-family: "B612 Mono", monospace;
-  font-weight: 700;
+
+.dm-mono-medium {
+  font-family: "DM Mono", monospace;
+  font-weight: 500;
   font-style: normal;
 }
-.b612-mono-regular-italic {
-  font-family: "B612 Mono", monospace;
+
+.dm-mono-light-italic {
+  font-family: "DM Mono", monospace;
+  font-weight: 300;
+  font-style: italic;
+}
+
+.dm-mono-regular-italic {
+  font-family: "DM Mono", monospace;
   font-weight: 400;
   font-style: italic;
 }
-.b612-mono-bold-italic {
-  font-family: "B612 Mono", monospace;
-  font-weight: 700;
+
+.dm-mono-medium-italic {
+  font-family: "DM Mono", monospace;
+  font-weight: 500;
   font-style: italic;
 }
+
 button {
-  font-family: "B612 Mono", monospace;
+  font-family: "DM Mono", monospace;
   font-size: 0.75rem;
 }
 
@@ -29,27 +45,27 @@ button {
   box-sizing: border-box;
 }
 
-/* Make sure html and body fill viewport */
+
 html, body {
   height: 100%;
   margin: 0;
   padding: 0;
   width: 100vw;
   background-color: #EDEDF9;
-  font-family: "B612 Mono", monospace;
+  font-family: "DM Mono", monospace;
   color: #222;
 }
 
 /* Global */
 body {
   display: grid;
-  grid-template-rows: auto 1fr; /* Header + content */
+  grid-template-rows: auto 1fr; 
   overflow: hidden;
 }
 
 /* Announcement Bar */
 .announcement-bar {
-  position: sticky; /* stays at top when scrolling */
+  position: sticky; 
   top: 0;
   width: 100%;
   background: #E6F5DC;
@@ -57,7 +73,7 @@ body {
   overflow: hidden;
   white-space: nowrap;
   z-index: 1000;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid lightgray;
   height: 1.8rem;
   display: flex;
   align-items: center;
@@ -154,7 +170,7 @@ body {
   border: 1px solid lightgrey;
   padding: 8px 8px;
   text-decoration: none;
-  text-transform: uppercase;
+
   background-color: #fff;
   color: #000;
   cursor: pointer;
@@ -183,22 +199,31 @@ body {
 .item.canvas-container {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
+    align-items: stretch;
   background-color: #fff;
   overflow: hidden;
-  border-bottom: 1px solid #EDEDF9;
+
+  /* Longer, thinner, more spaced dashes */
+  border-bottom: 1.5px solid transparent;
+  border-image: repeating-linear-gradient(
+    to right,
+    #e6e6f4 0 12px,     /* dash length */
+    transparent 12px 26px /* gap length */
+  ) 1;
+
   transition: box-shadow 0.2s ease;
   padding: 1rem;
   gap: 1rem;
 }
+
 .item.canvas-container:hover {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 /* Image */
 .canvas-container img {
-  width: 100px;
-  height: 100px;
+  width: 120px; /* adjust width to your liking */
+  height: 100%;
   object-fit: cover;
   display: block;
 }
@@ -226,14 +251,47 @@ body {
 
 /* Title, caption */
 .item-title {
-  font-size: 0.85rem;
-  text-transform: uppercase;
+  color: #444;
+  font-size: 0.8rem;
   margin-bottom: 0.25rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
 }
+
 .item-caption {
   font-size: 0.75rem;
   color: #444;
   margin-bottom: 0.5rem;
+}
+
+.item-description {
+  font-size: 0.7rem;
+  color: #444;
+  margin-bottom: 0.5rem;
+  line-height: 1rem;
+  max-width: 25rem;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.tag {
+  font-size: 0.65rem;
+  padding: 0.2rem 0.5rem;
+  background: #EDEDF9;
+  color: #333;
+  white-space: nowrap;
+  cursor: default;
+  user-select: none;
+  transition: background 0.2s ease;
+}
+
+.tag:hover {
+  background: #dcdcf0;
 }
 
 /* Play button */
@@ -311,19 +369,20 @@ input[type="range"]::-moz-range-thumb {
 
 @media (max-width: 600px) {
 
-  .effects-console {
-    display: none; 
-    width: 100%;
-    padding: 1.2rem;
-    background: #EDEDF9;
-    border-radius: 0;
-    box-sizing: border-box;
-    font-size: 0.75rem;
-    box-shadow: none;
-    transform-origin: top center;
-    transform: scale(0.85);
-    margin-top: 40%;
-  }
+.effects-console {
+  display: none;
+  width: 100%;
+  padding: 1.2rem;
+  background: rgba(237, 237, 249, 0.95); /* #EDEDF9 with 60% opacity */
+  backdrop-filter: blur(6px); /* subtle blur behind */
+  border-radius: 0;
+  box-sizing: border-box;
+  font-size: 0.75rem;
+  box-shadow: none;
+  transform-origin: top center;
+  transform: scale(0.85);
+  margin-top: 40%;
+}
 
   .effects-console.show {
     display: block; 
@@ -331,7 +390,7 @@ input[type="range"]::-moz-range-thumb {
 
   .effects-panel {
     position: absolute;
-    top: 40%;
+    top: 38%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 100;
@@ -359,13 +418,13 @@ input[type="range"]::-moz-range-thumb {
   }
 
   .effects-console button {
-    font-size: 0.75rem;
-    padding: 10px;
+    font-size: 0.75rem; 
+    padding: 0.3rem 0.3rem;
   }
 
   .effects-console label[for="master-gain-slider"] {
     font-size: 12px;
-    margin-bottom: 0.75rem; /* extra space below label */
+    margin-bottom: 0.75rem; 
   }
 
   .effects-console input#master-gain-slider {
