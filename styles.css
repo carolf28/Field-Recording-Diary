@@ -84,12 +84,12 @@ body {
   height: 100%; 
   overflow: hidden;
   gap: 2rem;
-  max-width: 100vw; /* Prevent overflow/resizing */
+  max-width: 100vw; 
 }
 
 /* Scrollable content */
 .grid-wrapper {
-  overflow-y: scroll; /* Always reserve scrollbar space to prevent jumps in Safari */
+  overflow-y: scroll; 
   overflow-x: hidden;
   height: 100%;     
   display: flex;
@@ -102,7 +102,7 @@ body {
   flex-grow: 0;
   max-width: 100%;
   max-inline-size: 100%;
-  contain: strict; /* Helps Safari isolate layout */
+  contain: strict; 
 }
 
 .effects-panel {
@@ -174,7 +174,7 @@ body {
   align-items: flex-start;
   background-color: #fff;
   overflow: hidden;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #EDEDF9;
   transition: box-shadow 0.2s ease;
   padding: 1rem;
   gap: 1rem;
@@ -298,18 +298,23 @@ input[type="range"]::-moz-range-thumb {
 
 
 @media (max-width: 600px) {
-  .main-content {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr;
-    height: 100vh;
-    position: relative;
+
+  .effects-console {
+    display: none; /* hide console by default */
+    width: 100%;
+    padding: 1.2rem;
+    background: #EDEDF9;
+    border-radius: 0;
+    box-sizing: border-box;
+    font-size: 0.75rem;
+    box-shadow: none;
+    transform-origin: top center;
+    transform: scale(0.85);
+    margin-top: 40%;
   }
 
-  .grid-wrapper {
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    height: 100%;
-    contain: strict;
+  .effects-console.show {
+    display: block; /* show console when toggled */
   }
 
   .effects-panel {
@@ -321,27 +326,18 @@ input[type="range"]::-moz-range-thumb {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 90vw; 
+    width: 90vw;
     max-width: 100vw;
     padding-left: calc(0.5rem + env(safe-area-inset-left));
     padding-right: calc(0.5rem + env(safe-area-inset-right));
     box-sizing: border-box;
-    pointer-events: auto;
+    pointer-events: none; /* disable pointer events when console hidden */
     margin-left: auto;
     margin-right: auto;
   }
 
-  .effects-console {
-    width: 100%;
-    padding: 1.2rem;
-    background: #EDEDF9;
-    border-radius: 0;
-    box-sizing: border-box;
-    font-size: 0.75rem;
-    box-shadow: none;
-    transform-origin: top center;
-    transform: scale(0.85);
-    margin-top: 40%; 
+  .effects-panel.active {
+    pointer-events: auto; /* enable pointer events when console visible */
   }
 
   .effects-console button,
@@ -355,7 +351,6 @@ input[type="range"]::-moz-range-thumb {
     padding: 10px;
   }
 
-  /* Override margin for the master volume label and slider for extra spacing */
   .effects-console label[for="master-gain-slider"] {
     font-size: 12px;
     margin-bottom: 0.75rem; /* extra space below label */
@@ -363,20 +358,20 @@ input[type="range"]::-moz-range-thumb {
 
   .effects-console input#master-gain-slider {
     margin-top: 0.75rem; /* extra space above slider */
-    margin-bottom: 1.5rem; /* keep consistent bottom margin */
+    margin-bottom: 1.5rem;
     display: block;
     width: 100%;
   }
 
   .effects-console input[type="range"]:not(#master-gain-slider) {
-    margin: 0 0 1.5rem 0; /* for other sliders */
+    margin: 0 0 1.5rem 0;
     display: block;
     width: 100%;
   }
 
   .effects-console button:last-child {
-  margin-bottom: 0; /* removes bottom margin of last button */
-}
+    margin-bottom: 0; /* remove bottom margin on last button */
+  }
 
   .effects-console button.active {
     color: #000;
@@ -388,5 +383,41 @@ input[type="range"]::-moz-range-thumb {
     height: 24px;
     background-size: 50% 50%;
   }
+
+  .toggle-controls-button {
+    position: fixed;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1010;
+    background-color: #E6F5DC;
+    text-decoration: none;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    font-family: "B612 Mono", monospace;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+
+  .main-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    height: 100vh;
+    position: relative;
+  }
+
+  .grid-wrapper {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    height: 100%;
+    contain: strict;
+  }
 }
 
+@media (min-width: 601px) {
+  .toggle-controls-button {
+    display: none;
+  }
+}

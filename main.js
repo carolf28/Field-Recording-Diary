@@ -12,3 +12,16 @@
       gridWrapper.scrollBy({ top: e.deltaY });
     }
   }, { passive: false });
+
+const toggleBtn = document.querySelector('.toggle-controls-button');
+const effectsConsole = document.querySelector('.effects-console');
+const effectsPanel = document.querySelector('.effects-panel');
+
+toggleBtn.addEventListener('click', () => {
+  const isShown = effectsConsole.classList.toggle('show');
+  if (isShown) {
+    effectsPanel.classList.add('active');
+  } else {
+    effectsPanel.classList.remove('active');
+  }
+});
