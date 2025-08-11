@@ -64,18 +64,30 @@ body {
   font-size: 0.7rem;
 }
 
-/* Rolling text */
-.announcement-bar span {
+/* Marquee container for scrolling */
+.announcement-bar .marquee {
   display: inline-block;
-  padding-left: 0;
-  padding-right: 2rem; 
-  animation: marquee 20s linear infinite;
+  white-space: nowrap;
+  will-change: transform;
 }
 
-@keyframes marquee {
-  0%   { transform: translateX(0%); }
-  100% { transform: translateX(-100%); }
+/* The scrolling text */
+.announcement-bar .marquee span {
+  display: inline-block;
+  padding-right: 2rem;
+  /* animation is set dynamically via JS */
 }
+
+/* Keyframes for smooth left scrolling */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
 
 /* Main layout grid */
 .main-content {
@@ -300,7 +312,7 @@ input[type="range"]::-moz-range-thumb {
 @media (max-width: 600px) {
 
   .effects-console {
-    display: none; /* hide console by default */
+    display: none; 
     width: 100%;
     padding: 1.2rem;
     background: #EDEDF9;
@@ -314,7 +326,7 @@ input[type="range"]::-moz-range-thumb {
   }
 
   .effects-console.show {
-    display: block; /* show console when toggled */
+    display: block; 
   }
 
   .effects-panel {
@@ -331,13 +343,13 @@ input[type="range"]::-moz-range-thumb {
     padding-left: calc(0.5rem + env(safe-area-inset-left));
     padding-right: calc(0.5rem + env(safe-area-inset-right));
     box-sizing: border-box;
-    pointer-events: none; /* disable pointer events when console hidden */
+    pointer-events: none; 
     margin-left: auto;
     margin-right: auto;
   }
 
   .effects-panel.active {
-    pointer-events: auto; /* enable pointer events when console visible */
+    pointer-events: auto; 
   }
 
   .effects-console button,
@@ -393,12 +405,16 @@ input[type="range"]::-moz-range-thumb {
     background-color: #E6F5DC;
     text-decoration: none;
     border: none;
-    padding: 0.6rem 1.2rem;
+    padding: 0.6rem 1.5rem;
     font-family: "B612 Mono", monospace;
     font-size: 0.8rem;
     border-radius: 4px;
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      color: #000;
+  text-transform: uppercase;
+  text-decoration: none;
+  font-size: 12px;
   }
 
   .main-content {

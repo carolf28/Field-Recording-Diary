@@ -25,3 +25,31 @@ toggleBtn.addEventListener('click', () => {
     effectsPanel.classList.remove('active');
   }
 });
+
+
+
+function makeMarquee() {
+  const marqueeSpan = document.querySelector('.announcement-bar .marquee span');
+  if (!marqueeSpan) return;
+
+  const text = marqueeSpan.textContent.trim();
+
+  // Repeat the text twice so it can scroll seamlessly
+  const repeatedText = text + '   ' + text;
+  marqueeSpan.textContent = repeatedText;
+
+  // Get widths for animation calculation
+  const marqueeContainer = document.querySelector('.announcement-bar .marquee');
+  const containerWidth = marqueeContainer.offsetWidth;
+  const textWidth = marqueeSpan.scrollWidth;
+
+  // Calculate animation duration based on text width (adjust speed here)
+  const speed = 100; // pixels per second
+  const duration = textWidth / speed; // seconds
+
+  // Set CSS animation on the span
+  marqueeSpan.style.animation = `marquee ${duration}s linear infinite`;
+}
+
+// Run it on page load
+window.addEventListener('load', makeMarquee);
