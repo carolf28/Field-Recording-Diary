@@ -80,21 +80,19 @@ body {
   font-size: 0.7rem;
 }
 
-/* Marquee container for scrolling */
+
 .announcement-bar .marquee {
   display: inline-block;
   white-space: nowrap;
   will-change: transform;
 }
 
-/* The scrolling text */
+
 .announcement-bar .marquee span {
   display: inline-block;
   padding-right: 2rem;
-  /* animation is set dynamically via JS */
 }
 
-/* Keyframes for smooth left scrolling */
 @keyframes marquee {
   0% {
     transform: translateX(0);
@@ -297,13 +295,13 @@ body {
 
 /* Play button */
 .my-play-button {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
+  background-size: 31% 31%;
   background-color: #F7F7F7;        
   background-image: url('play.png'); /* default play icon */
   background-repeat: no-repeat;
-  background-position: center;
-  background-size: 30% 30%;          
+  background-position: center;         
   border: none;
   cursor: pointer;
   padding: 0;
@@ -367,6 +365,102 @@ input[type="range"]::-moz-range-thumb {
   position: fixed;
 }
 
+.help-icon {
+  position: fixed;
+  font-family: "DM Mono";
+  bottom: 1rem;
+  right: 1rem;
+  width: 32px;
+  height: 32px;
+  background-color: #FAD4D8; 
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 400;
+  font-size: 0.9rem;
+  cursor: pointer;
+  z-index: 1020;
+  user-select: none;
+  border: none;
+  padding: 0;
+      box-shadow: 0 2px 6px rgba(255, 255, 255, 0.15);
+}
+
+/* intense glow ring on hover */
+.help-icon:hover {
+    box-shadow:
+    0 0 4px 3px rgba(255, 255, 255, 1),   /* tight bright core */
+    0 0 4px 3px rgba(255, 255, 255, 0.9), /* outer glow */
+    0 0 4px 3px rgba(255, 255, 255, 0.8); /* soft far reach */
+}
+
+/*BOX FOR HELP*/
+
+.help-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+}
+
+.help-popup.hidden {
+  display: none;
+}
+
+.help-popup-content {
+  background-color: #F69F95; /* coral pink */
+  color: #222;
+  padding: 1.5rem 2rem;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 0 30px rgba(246, 159, 149, 0.8);
+  font-size: 1rem;
+  position: relative;
+}
+
+/* Close button top right */
+.help-popup-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-size: 1.5rem;
+  background: transparent;
+  border: none;
+  color: #222;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+.help-popup-close:hover {
+  color: #fff;
+}
+
+/* Close button top right */
+.help-popup-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-size: 1.5rem;
+  background: transparent;
+  border: none;
+  color: #222;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+.help-popup-close:hover {
+  color: #fff;
+}
+
+
 
 @media (max-width: 600px) {
 
@@ -393,9 +487,8 @@ input[type="range"]::-moz-range-thumb {
   transform-origin: top center;
   transform: scale(0.85);
   margin-top: 40%;
-      border-radius: 4px;
-
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
 }
 
   .effects-console.show {

@@ -34,22 +34,48 @@ function makeMarquee() {
 
   const text = marqueeSpan.textContent.trim();
 
-  // Repeat the text twice so it can scroll seamlessly
   const repeatedText = text + '   ' + text;
   marqueeSpan.textContent = repeatedText;
 
-  // Get widths for animation calculation
   const marqueeContainer = document.querySelector('.announcement-bar .marquee');
   const containerWidth = marqueeContainer.offsetWidth;
   const textWidth = marqueeSpan.scrollWidth;
 
-  // Calculate animation duration based on text width (adjust speed here)
-  const speed = 100; // pixels per second
-  const duration = textWidth / speed; // seconds
+  
+  const speed = 100; 
+  const duration = textWidth / speed; 
 
-  // Set CSS animation on the span
+
   marqueeSpan.style.animation = `marquee ${duration}s linear infinite`;
 }
 
-// Run it on page load
+
 window.addEventListener('load', makeMarquee);
+
+//pop up help
+
+const helpIcon = document.querySelector('.help-icon');
+const helpPopup = document.getElementById('help-popup');
+const helpContent = document.querySelector('.help-popup-content');
+const closeBtn = document.querySelector('.help-popup-close');
+
+helpIcon.addEventListener('click', (e) => {
+  e.stopPropagation();           // prevent bubbling to avoid immediate close
+  helpPopup.classList.remove('hidden');
+});
+
+closeBtn.addEventListener('click', () => {
+  helpPopup.classList.add('hidden');
+});
+
+helpPopup.addEventListener('click', (e) => {
+  // If the click target is NOT inside helpPopupContent, close popup
+  if (!helpContent.contains(e.target)) {
+    helpPopup.classList.add('hidden');
+  }
+});
+
+// Optional: stop clicks inside the popup content from bubbling and closing
+helpContent.addEventListener('click', e => {
+  e.stopPropagation();
+});
