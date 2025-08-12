@@ -131,6 +131,7 @@ body {
   max-width: 100%;
   max-inline-size: 100%;
   contain: strict; 
+    padding-bottom: 2rem;
 }
 
 .effects-panel {
@@ -369,12 +370,22 @@ input[type="range"]::-moz-range-thumb {
 
 @media (max-width: 600px) {
 
+  .item-description {
+    font-size: 0.6rem;
+    line-height: 1.2;
+    max-width: 100%;
+  }
+
+  .tag {
+    font-size: 0.6rem;
+  }
+
 .effects-console {
   display: none;
   width: 100%;
   padding: 1.2rem;
-  background: rgba(237, 237, 249, 0.95); /* #EDEDF9 with 60% opacity */
-  backdrop-filter: blur(6px); /* subtle blur behind */
+  background: rgba(237, 237, 249, 0.95); 
+  backdrop-filter: blur(6px); 
   border-radius: 0;
   box-sizing: border-box;
   font-size: 0.75rem;
@@ -382,6 +393,9 @@ input[type="range"]::-moz-range-thumb {
   transform-origin: top center;
   transform: scale(0.85);
   margin-top: 40%;
+      border-radius: 4px;
+
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
 }
 
   .effects-console.show {
@@ -414,7 +428,7 @@ input[type="range"]::-moz-range-thumb {
   .effects-console button,
   .effects-console input[type="range"],
   .effects-console label[for="master-gain-slider"] {
-    margin-bottom: 1.5rem; /* consistent spacing */
+    margin-bottom: 1.5rem; 
   }
 
   .effects-console button {
@@ -428,7 +442,7 @@ input[type="range"]::-moz-range-thumb {
   }
 
   .effects-console input#master-gain-slider {
-    margin-top: 0.75rem; /* extra space above slider */
+    margin-top: 0.75rem;
     margin-bottom: 1.5rem;
     display: block;
     width: 100%;
@@ -465,12 +479,12 @@ input[type="range"]::-moz-range-thumb {
     text-decoration: none;
     border: none;
     padding: 0.6rem 1.5rem;
-    font-family: "B612 Mono", monospace;
+    font-family: "DM Mono", monospace;
     font-size: 0.8rem;
     border-radius: 4px;
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-      color: #000;
+    color: #000;
   text-transform: uppercase;
   text-decoration: none;
   font-size: 12px;
@@ -488,6 +502,7 @@ input[type="range"]::-moz-range-thumb {
     -webkit-overflow-scrolling: touch;
     height: 100%;
     contain: strict;
+      padding-bottom: 4rem;
   }
 }
 
