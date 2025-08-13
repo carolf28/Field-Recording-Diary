@@ -61,12 +61,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const helpPopup = document.getElementById('help-popup');
   const helpCloseBtn = document.querySelector('.help-popup-close');
 
-  // Toggle effects controls panel visibility
+  // Toggle effects
   toggleControlsBtn.addEventListener('click', () => {
     effectsPanel.classList.toggle('hidden');
   });
 
-  // Show help popup when clicking the question mark icon
+  //  help popup when clicking thek icon
   helpIcon.addEventListener('click', () => {
     helpPopup.classList.remove('hidden');
   });
@@ -76,7 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
     helpPopup.classList.add('hidden');
   });
 
-  // Optional: close help popup if clicking outside content
   helpPopup.addEventListener('click', (e) => {
     if (e.target === helpPopup) {
       helpPopup.classList.add('hidden');

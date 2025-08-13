@@ -40,7 +40,7 @@ button {
   font-size: 0.75rem;
 }
 
-/* Apply border-box globally */
+
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -56,7 +56,7 @@ html, body {
   color: #222;
 }
 
-/* Global */
+
 body {
   display: grid;
   grid-template-rows: auto 1fr; 
@@ -103,7 +103,7 @@ body {
 }
 
 
-/* Main layout grid */
+
 .main-content {
   display: grid;
   grid-template-columns: 40% 60%;
@@ -153,7 +153,7 @@ body {
   margin-top: -20px;
 }
 
-/* Buttons and sliders inside effects panel */
+
 .effects-console input[type="range"] {
   display: block;
   width: 100%;
@@ -202,7 +202,7 @@ body {
   background-color: #fff;
   overflow: hidden;
 
-  /* Longer, thinner, more spaced dashes */
+
   border-bottom: 1.5px solid transparent;
   border-image: repeating-linear-gradient(
     to right,
@@ -221,7 +221,7 @@ body {
 
 /* Image */
 .canvas-container img {
-  width: 120px; /* adjust width to your liking */
+  width: 120px; 
   height: 100%;
   object-fit: cover;
   display: block;
@@ -299,7 +299,7 @@ body {
   height: 32px;
   background-size: 31% 31%;
   background-color: #F7F7F7;        
-  background-image: url('play.png'); /* default play icon */
+  background-image: url('play.png'); 
   background-repeat: no-repeat;
   background-position: center;         
   border: none;
@@ -312,14 +312,14 @@ body {
 }
 
 .my-play-button.playing {
-  background-image: url('pause.png'); /* show pause icon when playing */
+  background-image: url('pause.png'); 
 }
 
 .my-play-button:hover {
   background-color: #E6F5DC;
 }
 
-/* Range sliders */
+/* sliders */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
@@ -388,18 +388,15 @@ input[type="range"]::-moz-range-thumb {
   box-shadow: 0 2px 6px rgba(255, 255, 255, 0.15);
 }
 
-/* intense glow ring on hover */
+/* glow ring on hover */
 .help-icon:hover {
     box-shadow:
-    0 0 3px 3px rgba(255, 255, 255, 1),   /* tight bright core */
-    0 0 3px 3px rgba(255, 255, 255, 0.9), /* outer glow */
-    0 0 8px 8px rgba(255, 255, 255, 0.8); /* soft far reach */
+    0 0 3px 3px rgba(255, 255, 255, 1),   
+    0 0 3px 3px rgba(255, 255, 255, 0.9), 
+    0 0 8px 8px rgba(255, 255, 255, 0.8); 
 }
 
 /*BOX FOR HELP*/
-
-
-
 .help-popup {
   position: fixed;
   top: 0;
@@ -428,7 +425,7 @@ input[type="range"]::-moz-range-thumb {
   text-align:center;
 }
 
-/* Close button top right */
+
 .help-popup-close {
   position: absolute;
   top: 0.5rem;
@@ -563,7 +560,7 @@ input[type="range"]::-moz-range-thumb {
   }
 
   .effects-console button:last-child {
-    margin-bottom: 0; /* remove bottom margin on last button */
+    margin-bottom: 0; 
   }
 
   .effects-console button.active {

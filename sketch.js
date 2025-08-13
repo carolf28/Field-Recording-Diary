@@ -144,8 +144,8 @@ function setup() {
     let soundInstance = null;
     const playBtn = createButton('').parent(container);
 
-    // Add a CSS class instead of inline styles
-    playBtn.addClass('my-play-button paused'); // start with paused state
+   
+    playBtn.addClass('my-play-button paused'); 
 
     playBtn.mousePressed(async () => {
       await userStartAudio();
