@@ -398,6 +398,8 @@ input[type="range"]::-moz-range-thumb {
 
 /*BOX FOR HELP*/
 
+
+
 .help-popup {
   position: fixed;
   top: 0;
@@ -415,15 +417,15 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .help-popup-content {
-  background-color: #F69F95; /* coral pink */
+  background-color: #FAD4D8; 
   color: #222;
   padding: 1.5rem 2rem;
-  max-width: 90vw;
+  max-width: 700px;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 0 30px rgba(246, 159, 149, 0.8);
   font-size: 1rem;
   position: relative;
+  text-align:center;
 }
 
 /* Close button top right */
@@ -458,6 +460,33 @@ input[type="range"]::-moz-range-thumb {
 }
 .help-popup-close:hover {
   color: #fff;
+}
+
+.help-popup-text {
+  padding: 20px 4px;        
+}
+
+.help-popup-title {
+  font-size: 0.9rem;
+}
+
+.help-popup-description {
+  font-size: 0.7rem;
+  line-height: 1.5;
+  color: #333;
+}
+
+.help-popup-gif {
+  display: flex;
+  justify-content: center; 
+  padding-left: 27px;          /* adjust offset here */
+}
+
+.help-popup-gif img {
+  max-width: 120px;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
 }
 
 
@@ -595,7 +624,24 @@ input[type="range"]::-moz-range-thumb {
     -webkit-overflow-scrolling: touch;
     height: 100%;
     contain: strict;
-      padding-bottom: 4rem;
+      padding-bottom: 8rem;
+  }
+
+  .help-popup-content {
+    padding: 16px;           /* smaller outer padding */
+    margin: 16px;
+  }
+  
+  .help-popup-text {
+    padding: 10px 6px;       /* slightly smaller text padding */
+  }
+  
+  .help-popup-description {
+    font-size: 0.875rem;
+  }
+  
+  .help-popup-title {
+    font-size: 1.25rem;
   }
 }
 

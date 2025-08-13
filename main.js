@@ -54,28 +54,32 @@ window.addEventListener('load', makeMarquee);
 
 //pop up help
 
-const helpIcon = document.querySelector('.help-icon');
-const helpPopup = document.getElementById('help-popup');
-const helpContent = document.querySelector('.help-popup-content');
-const closeBtn = document.querySelector('.help-popup-close');
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleControlsBtn = document.getElementById('toggle-controls');
+  const effectsPanel = document.querySelector('.effects-panel');
+  const helpIcon = document.querySelector('.help-icon');
+  const helpPopup = document.getElementById('help-popup');
+  const helpCloseBtn = document.querySelector('.help-popup-close');
 
-helpIcon.addEventListener('click', (e) => {
-  e.stopPropagation();           // prevent bubbling to avoid immediate close
-  helpPopup.classList.remove('hidden');
-});
+  // Toggle effects controls panel visibility
+  toggleControlsBtn.addEventListener('click', () => {
+    effectsPanel.classList.toggle('hidden');
+  });
 
-closeBtn.addEventListener('click', () => {
-  helpPopup.classList.add('hidden');
-});
+  // Show help popup when clicking the question mark icon
+  helpIcon.addEventListener('click', () => {
+    helpPopup.classList.remove('hidden');
+  });
 
-helpPopup.addEventListener('click', (e) => {
-  // If the click target is NOT inside helpPopupContent, close popup
-  if (!helpContent.contains(e.target)) {
+  // Close help popup
+  helpCloseBtn.addEventListener('click', () => {
     helpPopup.classList.add('hidden');
-  }
-});
+  });
 
-// Optional: stop clicks inside the popup content from bubbling and closing
-helpContent.addEventListener('click', e => {
-  e.stopPropagation();
+  // Optional: close help popup if clicking outside content
+  helpPopup.addEventListener('click', (e) => {
+    if (e.target === helpPopup) {
+      helpPopup.classList.add('hidden');
+    }
+  });
 });
