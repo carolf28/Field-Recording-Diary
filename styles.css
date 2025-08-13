@@ -419,7 +419,7 @@ input[type="range"]::-moz-range-thumb {
 .help-popup-content {
   background-color: #FAD4D8; 
   color: #222;
-  padding: 1.5rem 2rem;
+  padding: 1.5rem 3rem;
   max-width: 700px;
   max-height: 80vh;
   overflow-y: auto;
@@ -462,8 +462,11 @@ input[type="range"]::-moz-range-thumb {
   color: #fff;
 }
 
-.help-popup-text {
-  padding: 20px 4px;        
+.help-popup-text { 
+  padding-top: 0;   
+  padding-bottom: 20px;    
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 .help-popup-title {
@@ -479,7 +482,7 @@ input[type="range"]::-moz-range-thumb {
 .help-popup-gif {
   display: flex;
   justify-content: center; 
-  padding-left: 27px;          /* adjust offset here */
+  padding-left: 27px;         
 }
 
 .help-popup-gif img {
@@ -627,22 +630,32 @@ input[type="range"]::-moz-range-thumb {
       padding-bottom: 8rem;
   }
 
+  .help-popup {
+    margin-top: -40px;
+  }
   .help-popup-content {
-    padding: 16px;           /* smaller outer padding */
+    padding: 16px;          
     margin: 16px;
   }
   
-  .help-popup-text {
-    padding: 10px 6px;       /* slightly smaller text padding */
-  }
+.help-popup-text { 
+  padding-top: 0;   
+  padding-bottom: 10px;    
+  padding-left: 15px;
+  padding-right: 15px;
+}
   
   .help-popup-description {
-    font-size: 0.875rem;
+    font-size: 0.6rem;
   }
   
   .help-popup-title {
-    font-size: 1.25rem;
+    font-size: 0.7rem;
   }
+
+  .help-popup-gif img {
+  max-width: 110px;
+}
 }
 
 @media (min-width: 601px) {
