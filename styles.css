@@ -509,7 +509,7 @@ input[type="range"]::-moz-range-thumb {
 
   .effects-panel {
     position: absolute;
-    top: 38%;
+    top: 41%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 100;
