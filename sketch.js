@@ -12,12 +12,14 @@ let freqSlider, filterSlider, timeStretchSlider, masterGainSlider;
 let delayTimeSlider, delayFeedbackSlider, delayFilterSlider;
 let reverbWetSlider;
 
-let filter;       
+let filter;
 let delay;
-let delayFilter;  
+let delayFilter;
 let reverb;
 
 let dryGain, delayWetGain, reverbWetGain;
+let delaySendGain, reverbSendGain;
+
 let mediaRecorder = null;
 let recordedChunks = [];
 let dest = null;
@@ -51,10 +53,20 @@ function setup() {
   reverbWetGain = audioCtx.createGain();
   reverbWetGain.gain.value = 0;
 
+  delaySendGain = audioCtx.createGain();
+  delaySendGain.gain.value = 0; // start off (bypass)
+
+  reverbSendGain = audioCtx.createGain();
+  reverbSendGain.gain.value = 0; // start off (bypass)
+
+  // Connect delay chain
+  delaySendGain.connect(delay);
   delay.connect(delayFilter);
   delayFilter.connect(delayWetGain);
   delayWetGain.connect(masterGain);
 
+  // Connect reverb chain
+  reverbSendGain.connect(reverb);
   reverb.connect(reverbWetGain);
   reverbWetGain.connect(masterGain);
 
@@ -81,7 +93,7 @@ function setup() {
   Object.entries(sliderEffectMap).forEach(([sliderId, effect]) => {
     const slider = document.getElementById(sliderId);
     const button = document.querySelector(`button[data-effect="${effect}"]`);
-    
+
     if (slider && button) {
       slider.addEventListener('input', () => {
         if (!button.classList.contains('active')) {
@@ -131,10 +143,10 @@ function setup() {
     const audioFile = container.elt.dataset.audio;
     let soundInstance = null;
     const playBtn = createButton('').parent(container);
-    
+
     // Add a CSS class instead of inline styles
     playBtn.addClass('my-play-button paused'); // start with paused state
-    
+
     playBtn.mousePressed(async () => {
       await userStartAudio();
 
@@ -191,26 +203,26 @@ function draw() {
 
 function toggleEffect(effect, isActive) {
   switch (effect) {
-    case 'modulation': 
-      isModulating = isActive; 
+    case 'modulation':
+      isModulating = isActive;
       break;
-    case 'filter': 
-      isFilterOn = isActive; 
-      updateFilter(); 
+    case 'filter':
+      isFilterOn = isActive;
+      updateFilter();
       break;
-    case 'time-stretch': 
-      isTimeStretchOn = isActive; 
-      updateTimeStretch(); 
+    case 'time-stretch':
+      isTimeStretchOn = isActive;
+      updateTimeStretch();
       break;
     case 'delay-time':
     case 'delay-feedback':
     case 'delay-filter':
-      isDelayOn = isActive; 
-      updateDelay(); 
+      isDelayOn = isActive;
+      updateDelay();
       break;
-    case 'reverb': 
-      isReverbOn = isActive; 
-      updateReverb(); 
+    case 'reverb':
+      isReverbOn = isActive;
+      updateReverb();
       break;
   }
 }
@@ -218,18 +230,27 @@ function toggleEffect(effect, isActive) {
 function startSound(soundInstance, playBtn) {
   if (!soundInstance) return;
   soundInstance.disconnect();
+
+  // Connect the sound source to filter
   soundInstance.connect(filter);
+
   filter.disconnect();
+
+  // Connect filter output to dryGain AND send gains for delay and reverb
   filter.connect(dryGain);
-  filter.connect(delay);
-  filter.connect(reverb);
+
+  filter.connect(delaySendGain);  // signal goes to delay only if send gain > 0
+  filter.connect(reverbSendGain); // signal goes to reverb only if send gain > 0
+
   dryGain.connect(masterGain);
+
   soundInstance.loop();
   soundInstance.setVolume(1);
-  // Toggle button classes instead of text
+
   playBtn.removeClass('paused').addClass('playing');
   activeSound = soundInstance;
   activePlayBtn = playBtn;
+
   updateFilter();
   updateTimeStretch();
   updateDelay();
@@ -263,16 +284,23 @@ function updateDelay() {
   const filterFreq = map(delayFilterSlider.value(), 0, 1, 100, 10000);
   delay.feedback(feedback);
   delay.filter(filterFreq);
-  const delayWetVal = (delayTimeSlider.value() > 0 || delayFeedbackSlider.value() > 0 || delayFilterSlider.value() > 0) ? 0.5 : 0;
-  delayWetGain.gain.value = delayWetVal;
-  dryGain.gain.value = 1 - delayWetVal - reverbWetGain.gain.value;
+
+  const delayActive = delayTimeSlider.value() > 0 || delayFeedbackSlider.value() > 0 || delayFilterSlider.value() > 0;
+
+  delaySendGain.gain.value = delayActive ? 1 : 0;
+  delayWetGain.gain.value = delayActive ? 0.5 : 0;
+
+  dryGain.gain.value = 1 - delayWetGain.gain.value - reverbWetGain.gain.value;
 }
 
 function updateReverb() {
   if (!activeSound) return;
   const wetVal = reverbWetSlider.value();
   isReverbOn = wetVal > 0;
+
+  reverbSendGain.gain.value = isReverbOn ? 1 : 0;
   reverbWetGain.gain.value = wetVal;
+
   dryGain.gain.value = 1 - wetVal - delayWetGain.gain.value;
   reverb.set(wetVal * 5, 1.2);
 }
