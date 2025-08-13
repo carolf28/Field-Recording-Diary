@@ -391,9 +391,9 @@ input[type="range"]::-moz-range-thumb {
 /* intense glow ring on hover */
 .help-icon:hover {
     box-shadow:
-    0 0 4px 3px rgba(255, 255, 255, 1),   /* tight bright core */
-    0 0 4px 3px rgba(255, 255, 255, 0.9), /* outer glow */
-    0 0 4px 3px rgba(255, 255, 255, 0.8); /* soft far reach */
+    0 0 3px 3px rgba(255, 255, 255, 1),   /* tight bright core */
+    0 0 3px 3px rgba(255, 255, 255, 0.9), /* outer glow */
+    0 0 8px 8px rgba(255, 255, 255, 0.8); /* soft far reach */
 }
 
 /*BOX FOR HELP*/
@@ -426,23 +426,6 @@ input[type="range"]::-moz-range-thumb {
   font-size: 1rem;
   position: relative;
   text-align:center;
-}
-
-/* Close button top right */
-.help-popup-close {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  font-size: 1.5rem;
-  background: transparent;
-  border: none;
-  color: #222;
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
-}
-.help-popup-close:hover {
-  color: #fff;
 }
 
 /* Close button top right */
