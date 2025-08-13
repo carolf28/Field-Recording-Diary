@@ -641,6 +641,11 @@ input[type="range"]::-moz-range-thumb {
   .help-popup-gif img {
   max-width: 110px;
 }
+
+  .announcement-bar {
+  display: none;
+}
+
 }
 
 @media (min-width: 601px) {
