@@ -54,6 +54,7 @@ html, body {
   background-color: #EDEDF9;
   font-family: "DM Mono", monospace;
   color: #222;
+  
 }
 
 
@@ -61,6 +62,7 @@ body {
   display: grid;
   grid-template-rows: auto 1fr; 
   overflow: hidden;
+  padding-top: env(safe-area-inset-top);
 }
 
 /* Announcement Bar */
