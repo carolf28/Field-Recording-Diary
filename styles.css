@@ -477,7 +477,7 @@ input[type="range"]::-moz-range-thumb {
 
 
 .mobile-top-bar {
-  position: sticky;       
+  position: fixed;       
   top: 0;
   width: 100%;
   background: #E6F5DC;
@@ -516,6 +516,7 @@ input[type="range"]::-moz-range-thumb {
 
   body {
     overflow: auto; 
+    padding-top: 1.8rem;
   }
 
   .item-description {
