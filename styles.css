@@ -476,12 +476,48 @@ input[type="range"]::-moz-range-thumb {
 
 
 
+.mobile-top-bar {
+  position: sticky;       
+  top: 0;
+  width: 100%;
+  background: #E6F5DC;
+  color: #222;
+  overflow: hidden;
+  white-space: nowrap;
+  z-index: 1000;
+  border-bottom: 1px solid lightgray;
+  height: 1.8rem;
+  display: flex;
+  align-items: center;
+  font-size: 0.7rem;
+  justify-content: center; 
+    display: none;
+}
+
+.mobile-top-bar p {
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  width: 100%;
+  line-height: 1.8rem;
+}
+
+
+
+
+
+
+
 @media (max-width: 600px) {
 
-  body {
-    overflow: auto; /* instead of hidden */
+    .mobile-top-bar {
+    display: block;
   }
-  
+
+  body {
+    overflow: auto; 
+  }
+
   .item-description {
     font-size: 0.6rem;
     line-height: 1.2;
@@ -618,7 +654,7 @@ input[type="range"]::-moz-range-thumb {
     -webkit-overflow-scrolling: touch;
     height: 100%;
     contain: strict;
-      padding-bottom: 6rem;
+      padding-bottom: 4rem;
   }
 
   .help-popup {
